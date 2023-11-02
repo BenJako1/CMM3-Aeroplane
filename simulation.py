@@ -11,115 +11,60 @@ October-November 2023
 import numpy as np
 import matplotlib.pyplot as plt
 import constants, forms
+from scipy import integrate
 
-#-----------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # User parameters
 
-velocity = 100  # Aircraft velocity in m/s
-gamma = 0.00   # Path angle in rad
+velocity_0 = 100  # Aircraft velocity in m/s
+gamma_0 = 0.00   # Path angle in rad
 
-#-----------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Trim & output
 
-alpha, delta, theta, ub, wb, thrust = forms.Trim(velocity, gamma)
+alpha_0, delta_0, q_0, theta_0, ub_0, wb_0, thrust_0 = forms.Trim(velocity_0, gamma_0)
 
 
-print(f"alpha = {alpha}")
-print(f"delta = {delta}")
-print(f"thrust = {thrust}")
-print(f"theta = {theta}")
-print(f"ub = {ub}")
-print(f"wb = {wb}")
+print(f"alpha = {alpha_0}")
+print(f"delta = {delta_0}")
+print(f"q = {q_0}")
+print(f"thrust = {thrust_0}")
+print(f"theta = {theta_0}")
+print(f"ub = {ub_0}")
+print(f"wb = {wb_0}")
 
-#-----------------------------------------------------------------------------------------------------------
-# Applying Euler method for solving differential DOF equations
+#------------------------------------------------------------------------------
 
 t0 = 0      # Initial time (s)
-tEnd = 10   # End time (s)
-dt = 0.1    # Time step size (s)
+t_end = 400   # End time (s)
 
-q = 0 # Initial angular velocity in rad/sec
-xe = 0
-ze = 0
-t = t0
+q, theta, ub, wb, xe, ze = q_0, theta_0, ub_0, wb_0, 0, 0
 
-moment = forms.Moment(alpha, delta, velocity)
-
-tValues = [t0]
-thetaValues = [theta]
-qValues = [q]
-xeValues = [xe]
-zeValues = [ze]
-ubValues = [ub]
-wbValues = [wb]
-gammaValues = [gamma]
-alphaValues = [alpha]
-momentValues = [moment]
-
-while t < tEnd:
-    if t >= 1:
-        delta = -0.0572
-    
-    # Compute new values using the DOF equations
-    theta += q * dt
-    alpha = np.arctan2(wb, ub)
-    gamma = theta - alpha
-    moment = forms.Moment(alpha, delta, velocity)
-    thrust = forms.Engine_Thrust(alpha, delta, theta, velocity)
-    q += (moment/constants.inertia_yy) * dt
-    xe += (ub * np.cos(theta) + wb * np.sin(theta)) * dt
-    ze -= (- ub * np.sin(theta) + wb * np.cos(theta)) * dt
-    ub += (forms.Lift(alpha, delta, velocity) * np.sin(alpha) / constants.mass - forms.Drag(alpha, delta, velocity) *
-           np.cos(alpha) / constants.mass - q * wb - constants.gravity * np.sin(theta) +
-           thrust/constants.mass) * dt
-    wb += (- np.cos(alpha) * forms.Lift(alpha, delta, velocity) / constants.mass - forms.Drag(alpha, delta, velocity) *
-           np.sin(alpha) / constants.mass + q * ub + constants.gravity * np.cos(theta)) * dt
-    # Append new values to arrays
-    t += dt
-    
-    tValues.append(round(t, 1))
-    thetaValues.append(theta)
-    qValues.append(q)
-    xeValues.append(xe)
-    zeValues.append(ze)
-    ubValues.append(ub)
-    wbValues.append(wb)
-    alphaValues.append(alpha)
-    gammaValues.append(gamma)
-    momentValues.append(moment)
+y = integrate.solve_ivp(forms.SimControl, [0,t_end], [q, theta, ub, wb, xe, ze], t_eval=np.linspace(0,t_end,t_end*10))
 
 # Plot the results
-plt.plot(tValues, alphaValues, 'b-')
-plt.subplot(4, 2, 1)
-plt.plot(tValues, ubValues)
-plt.xlabel('time')
-plt.ylabel('ub')
-plt.subplot(4, 2, 2)
-plt.plot(tValues, wbValues)
-plt.xlabel('time')
-plt.ylabel('wb')
-plt.subplot(4, 2, 3)
-plt.plot(tValues, qValues)
+plt.subplot(3, 2, 1)
+plt.plot(y.t, y.y[0])
 plt.xlabel('time')
 plt.ylabel('q')
-plt.subplot(4, 2, 4)
-plt.plot(tValues, thetaValues)
+plt.subplot(3, 2, 2)
+plt.plot(y.t, y.y[1])
 plt.xlabel('time')
 plt.ylabel('theta')
-plt.subplot(4, 2, 5)
-plt.plot(tValues, gammaValues)
+plt.subplot(3, 2, 3)
+plt.plot(y.t, y.y[2])
 plt.xlabel('time')
-plt.ylabel('path angle')
-plt.subplot(4, 2, 6)
-plt.plot(tValues, zeValues)
+plt.ylabel('ub')
+plt.subplot(3, 2, 4)
+plt.plot(y.t, y.y[3])
+plt.xlabel('time')
+plt.ylabel('wb')
+plt.subplot(3, 2, 5)
+plt.plot(y.t, y.y[4])
+plt.xlabel('time')
+plt.ylabel('xe')
+plt.subplot(3, 2, 6)
+plt.plot(y.t, -y.y[5])
 plt.xlabel('time')
 plt.ylabel('ze')
-plt.subplot(4, 2, 7)
-plt.plot(tValues, alphaValues)
-plt.xlabel('time')
-plt.ylabel('alpha')
-plt.subplot(4, 2, 8)
-plt.plot(tValues, momentValues)
-plt.xlabel('time')
-plt.ylabel('moment')
 plt.show()

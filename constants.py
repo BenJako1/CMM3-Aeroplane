@@ -8,6 +8,7 @@ October-November 2023
 '''
 
 import numpy as np
+from scipy import optimize
 
 gravity = 9.81  # Gravitational acceleration in m/s^2
 air_density = 1.0065    # Air density in kg/m^3
@@ -16,8 +17,8 @@ cbar = 1.75 # airfoil chord in m
 mass = 1300.0     # Mass of the airplane in kg
 inertia_yy = 7000   # Moment of inertia in kg/m^2
 
-alpha_list = np.array(np.deg2rad([-16,-12,-8,-4,-2,0,2,4,8,12])) # List of angle of attack values in radians
-delta_el_list  = np.array(np.deg2rad([-20,-10,0,10,20]))    # List of elevator angle values in radians
+alpha_list = np.array([-16,-12,-8,-4,-2,0,2,4,8,12]) # List of angle of attack values in radians
+delta_el_list  = np.array([-20,-10,0,10,20])    # List of elevator angle values in radians
 CD_list = np.array([
     0.115000000000000
   , 0.079000000000000
@@ -50,7 +51,7 @@ CM_list = np.array([
   , 0.021700000000000
   , 0.007300000000000
   ,-0.009000000000000
-  ,-0.026300000000000
+  ,-0.026300000000000 
   ,-0.063200000000000
   ,-0.123500000000000
   ])
@@ -71,12 +72,35 @@ CL_el_list = np.array([
 
 #-----------------------------------------------------------------------------------------------------------
 # Fit curves to data sets, defining constants
-CLa, CL0 = np.polyfit(alpha_list, CL_list, 1)
-CLde, _ = np.polyfit(delta_el_list, CL_el_list, 1)
-CMa, CM0 = np.polyfit(alpha_list, CM_list, 1)
-CMde, _ = np.polyfit(delta_el_list, CM_el_list, 1)
-K, _, CD0 = np.polyfit(CL_list, CD_list, 2)
+CL0 = 0.04
+CLa = 0.1
+def CLa_func (x, a, b):
+    return a + b * x
+[CL0, CLa], _ = optimize.curve_fit(CLa_func, alpha_list, CL_list, p0=[CL0, CLa])
 
+CLde = 0.003
+def CLde_func (x, a):
+    return x * a
+[CLde], _ = optimize.curve_fit(CLde_func, delta_el_list, CL_el_list, p0=CLde)
+
+CM0 = 0.0
+CMa = -0.06
+def CM_func(x, a, b):
+    return a + b * x
+[CM0, CMa], _ = optimize.curve_fit(CM_func, alpha_list, CM_list, p0=[CM0, CMa])
+
+CMde = -0.005
+def CMde_func (x, a):
+    return x * a
+[CMde], _ = optimize.curve_fit(CMde_func, delta_el_list, CM_el_list, p0=CMde)
+
+CD0 = 0.02
+K = 0.04
+def CD_func(x, a, b):
+    return a + b * x**2.0
+[CD0, K], _ = optimize.curve_fit(CD_func, CL_list, CD_list, p0=[CD0, K])
+
+'''
 # Print constant values
 print(f"CLa = {CLa}")
 print(f"CL0 = {CL0}")
@@ -86,3 +110,4 @@ print(f"CLde = {CLde}")
 print(f"CMde = {CMde}")
 print(f"CD0 = {CD0}")
 print(f"K = {K}")
+'''
