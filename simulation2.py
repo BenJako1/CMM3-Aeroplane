@@ -118,22 +118,8 @@ class Simulation(Sim):
         trimParams = Trim(trimVelocity,trimGamma)
         self.Trim = trimParams
 
-        gamma2 = trimGamma + np.pi/90
-        self.Trim2 = Trim(trimVelocity,gamma2)
+        y = integrate.solve_ivp(self.Model,[0,t_end],[0,trimParams.theta,trimParams.ub,trimParams.wb,0,0],t_eval=np.linspace(0,t_end,t_end*10))
 
-        self.T_climb = t_climb_end
-        final_h = 0
-
- 
-
-        #Keeps trying until the final value of h is the traget value +-1
-        while final_h < 1999:
-            self.T_climb += Precision
-            y = integrate.solve_ivp(self.Model,[0,t_end],[0,trimParams.theta,trimParams.ub,trimParams.wb,0,0],t_eval=np.linspace(0,t_end,t_end*10))
-            final_h = y.y[5][len(y.y[5]) - 1] * -1 +1000
-
-        print(f"Optimimum T_Climb: {self.T_climb}")
-        print(f"Final Height: {final_h}")
         self.HandleSimulationData(y,1000)
 
  
