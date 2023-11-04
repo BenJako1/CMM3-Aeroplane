@@ -41,16 +41,10 @@ def Engine_Thrust(alpha, delta, theta, velocity):
 def Trim(velocity, gamma):
     
     def alpha_trim_func(alpha):
-        alpha_deg = np.rad2deg(alpha)
-        delta_deg = -(constants.CM0 + constants.CMa * alpha_deg) / constants.CMde
+        delta = np.deg2rad(-(constants.CM0 + constants.CMa * np.rad2deg(alpha)) / constants.CMde)
 
-        CL = constants.CL0 + (constants.CLa * alpha_deg) + (constants.CLde * delta_deg)
-        CD = constants.CD0 + constants.K * (CL**2)
-
-        Lift_component = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * CL
-        Drag_component = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * CD
-
-        return (-Lift_component * np.cos(alpha) - Drag_component * np.sin(alpha) + constants.mass * constants.gravity * np.cos(alpha + gamma))
+        return (-Lift(alpha, delta, velocity) * np.cos(alpha) - Drag(alpha, delta, velocity) * np.sin(alpha) + constants.mass * constants.gravity * np.cos(alpha + gamma))
+    
     # Solve for alpha and delta
     initial_guess = 0.01  # Provide an initial guess
     alpha = newton(alpha_trim_func, initial_guess)
@@ -72,21 +66,12 @@ def Equations (t, y, delta, thrust):
     
     alpha = np.arctan2(wb, ub)
     velocity = np.sqrt(ub**2 + wb**2)
-    thrust = Engine_Thrust(alpha, delta, theta, velocity)
     
-    CL = Coefficient_of_Lift(alpha, delta)
-    CM = Coefficient_of_Moment(alpha, delta)
-    CD = Coefficient_of_Drag(alpha, delta)
-    
-    Lift = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * CL
-    Drag = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * CD
-    Moment = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * constants.cbar * CM
-    
-    dq_dt = (Moment/constants.inertia_yy)
+    dq_dt = (Moment(alpha, delta, velocity)/constants.inertia_yy)
     dtheta_dt = q
     
-    dub_dt = (Lift * np.sin(alpha) - Drag * np.cos(alpha) - constants.mass * q * wb - constants.mass * constants.gravity * np.sin(theta) + thrust) / constants.mass
-    dwb_dt = (-Lift * np.cos(alpha) - Drag * np.sin(alpha) + constants.mass * q * wb + constants.mass * constants.gravity * np.cos(theta)) / constants.mass
+    dub_dt = (Lift(alpha, delta, velocity) * np.sin(alpha) - Drag(alpha, delta, velocity) * np.cos(alpha) - constants.mass * q * wb - constants.mass * constants.gravity * np.sin(theta) + thrust) / constants.mass
+    dwb_dt = (-Lift(alpha, delta, velocity) * np.cos(alpha) - Drag(alpha, delta, velocity) * np.sin(alpha) + constants.mass * q * wb + constants.mass * constants.gravity * np.cos(theta)) / constants.mass
     
     dxe_dt = ub * np.cos(theta) + wb * np.sin(theta)
     dze_dt = - ub * np.sin(theta) + wb * np.cos(theta)
@@ -94,10 +79,13 @@ def Equations (t, y, delta, thrust):
     return dq_dt, dtheta_dt, dub_dt, dwb_dt, dxe_dt, dze_dt
 
 def SimControl (t, y):
-    if t > 50:
-        delta = -0.0572
+    _, delta_0, _, _, _, _, thrust_0 = Trim(100, 0)
+    _, delta_1, _, _, _, _, thrust_1 = Trim(120, 0.05)
+    if t > 100:
+        delta = delta_1
+        thrust = thrust_1
     else:
-        delta = -0.05200099050190098
-    thrust = 2755.173924229019
+        delta = delta_0
+        thrust = thrust_0
     return Equations(t, y, delta, thrust)
  

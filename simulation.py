@@ -10,7 +10,7 @@ October-November 2023
 # importing modules
 import numpy as np
 import matplotlib.pyplot as plt
-import constants, forms
+import forms
 from scipy import integrate
 
 #------------------------------------------------------------------------------
@@ -18,6 +18,8 @@ from scipy import integrate
 
 velocity_0 = 100  # Aircraft velocity in m/s
 gamma_0 = 0.00   # Path angle in rad
+
+ze_0 = 0
 
 #------------------------------------------------------------------------------
 # Trim & output
@@ -36,11 +38,11 @@ print(f"wb = {wb_0}")
 #------------------------------------------------------------------------------
 
 t0 = 0      # Initial time (s)
-t_end = 400   # End time (s)
+t_end = 300   # End time (s)
 
-q, theta, ub, wb, xe, ze = q_0, theta_0, ub_0, wb_0, 0, 0
+q, theta, ub, wb, xe, ze = q_0, theta_0, ub_0, wb_0, 0, ze_0
 
-y = integrate.solve_ivp(forms.SimControl, [0,t_end], [q, theta, ub, wb, xe, ze], t_eval=np.linspace(0,t_end,t_end*10))
+y = integrate.solve_ivp(forms.SimControl, [0,t_end], [q, theta, ub, wb, xe, ze], t_eval=np.linspace(t0,t_end,t_end*10))
 
 # Plot the results
 plt.subplot(3, 2, 1)
