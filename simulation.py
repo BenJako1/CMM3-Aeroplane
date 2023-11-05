@@ -1,167 +1,112 @@
 
-# importing modules
+import constants 
+import Forms
 import numpy as np
+import math
 import matplotlib.pyplot as plt
-from scipy.optimize import newton
-import constants
-import forms
+from scipy import integrate
 
-#-----------------------------------------------------------------------------------------------------------
-# User parameters
+def SimControl (t, y):
+    thrust = 0  # Set a default value
+    if t > 100:
+        delta = -0.0572
+         # Assign a value if the condition is met
+    else:
+        delta = -0.0520009905019009
+    return Equations(t, y, delta)
 
-velocity = 100  # Aircraft velocity in m/s
-gamma = 0.00   # Path angle in rad
 
-#-----------------------------------------------------------------------------------------------------------
-# Defining functions for later use. The functions are derived from the project breif.
-
-def CL (a, d):
-    return forms.Coefficient_of_Lift(a, d)
-
-def CM (a, d):
-    return forms.Coefficient_of_Moment(a, d)
-
-def CD (a, d):
-    return forms.Coefficient_of_Drag(a, d)
-
-def L (a, d):
-    return forms.Lift(a, d, velocity, gamma)
-
-def D (a, d):
-    return forms.Drag(a, d, velocity, gamma)
-
-def M (a, d):
-    return forms.Moment(a, d, velocity, gamma)
-
-def Thrust (a, d, the):
-    return forms.Engine_Thrust(a, d, the, velocity, gamma)
-
-# Runge-Kutta method for integral solving. Parameters from dx/dt = f
-def RK4(x, f, dt):
-    k1 = f
-    k2 = f + 0.5 * dt * k1
-    k3 = f + 0.5 * dt * k2
-    k4 = f + dt * k3
+def Equations (t, y, delta):
+    q, theta, ub, wb, xe, ze = y
     
-    return x + (dt / 6) * (k1 + 2 * k2 + 2 * k3 + k4)
+    alpha = np.arctan(wb/ub)
+    
+    velocity = np.sqrt(ub**2 + wb**2)
+    #Change to thrust fornula raw if needed
+    thrust = Forms.Engine_Thrust(alpha, delta, theta, velocity)
+    
+    CL = Forms.Coefficient_of_Lift(alpha, delta)
+    CM = Forms.Coefficient_of_Moment(alpha, delta)
+    CD = Forms.Coefficient_of_Drag(alpha, delta)
+    
+    Lift = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * CL
+    Drag = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * CD
+    Moment = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * constants.cbar * CM
+    
+    dq_dt = (Moment/constants.inertia_yy)
+    dtheta_dt = q
+    
+    dub_dt = (Lift * np.sin(alpha)/constants.mass) - (Drag * np.cos(alpha)/constants.mass) - (q * wb) - (constants.mass * constants.gravity * np.sin(theta)/constants.mass) + (thrust / constants.mass)
+    dwb_dt = (-Lift * np.cos(alpha) - Drag * np.sin(alpha) + (constants.mass * q * ub) + constants.mass * constants.gravity * np.cos(theta)) / constants.mass
+    
+    dxe_dt = ub * np.cos(theta) + wb * np.sin(theta)
+    dze_dt = - ub * np.sin(theta) + wb * np.cos(theta)
+    
+    return dq_dt, dtheta_dt, dub_dt, dwb_dt, dxe_dt, dze_dt
 
-#-----------------------------------------------------------------------------------------------------------
-# Final calculations & output
 
-# Define the equilibrium equation as f(a)
-def f(a):
-    return forms.Equilibrium(a, velocity, gamma)   
+velocity_0 = 100  # Aircraft velocity in m/s
+gamma_0 = 0.00   # Path angle in rad
 
-# Solve for alpha and delta
-initial_guess = 0.01  # Provide an initial guess
-alpha = newton(f, initial_guess)
-delta = -(constants.CM0 + constants.CMa * alpha)/constants.CMde
+#------------------------------------------------------------------------------
+# Trim & output
 
-# Calculating other variables to output
-theta = alpha + gamma
-ub = velocity * np.cos(alpha)
-wb = velocity * np.sin(alpha)
-
-# Calculating Thrust
-thrust = Thrust(alpha, delta, theta) 
-
-print(f"alpha = {alpha}")
-print(f"delta = {delta}")
-print(f"thrust = {thrust}")
-print(f"theta = {theta}")
-print(f"ub = {ub}")
-print(f"wb = {wb}")
-#Moment replaced with M
-print(M(alpha, delta))
-
-#-----------------------------------------------------------------------------------------------------------
-# Applying Euler method for solving differential DOF equations
-
+alpha_0, delta_0, q_0, theta_0, ub_0, wb_0, thrust_0 = Forms.Trim(velocity_0, gamma_0)
+'''
+print(f"alpha = {alpha_0}")
+print(f"delta = {delta_0}")
+print(f"q = {q_0}")
+print(f"thrust = {thrust_0}")
+print(f"theta = {theta_0}")
+print(f"ub = {ub_0}")
+print(f"wb = {wb_0}")
+'''
 t0 = 0      # Initial time (s)
-tEnd = 10   # End time (s)
-dt = 0.1    # Time step size (s)
+t_end = 300   # End time (s)
 
-q = 0 # Initial angular velocity in rad/sec
+q, theta, ub, wb, xe, ze = q_0, theta_0, ub_0, wb_0, 0, 0
+'''
+a = 0.0164
+q = 0
+theta = 0.0164
+ub = 99.86
+wb = 1.646
 xe = 0
 ze = 0
-t = t0
+'''
+y = integrate.solve_ivp(SimControl, [0,300], [0, theta, ub, wb, xe, ze], method='Radau', t_eval=np.linspace(0, t_end, 3000))
 
-moment = 0
+plt.figure(figsize=(12, 10))
 
-tValues = [t0]
-thetaValues = [theta]
-qValues = [q]
-xeValues = [xe]
-zeValues = [ze]
-ubValues = [ub]
-wbValues = [wb]
-gammaValues = [gamma]
-alphaValues = [alpha]
-momentValues = [moment]
-
-while t < tEnd:
-    if t >= 1:
-        delta = -0.0572
-    # Compute new values using the DOF equations
-    theta = RK4(theta, q, dt)
-    alpha = np.arctan2(wb, ub)
-    gamma = theta - alpha
-    #Moment replaced with M
-    moment = M(alpha, delta)
-    thrust = Thrust(alpha, delta, theta)
-    q = RK4(q, (moment/constants.inertia_yy), dt)
-    xe += (ub * np.cos(theta) + wb * np.sin(theta)) * dt
-    ze -= (- ub * np.sin(theta) + wb * np.cos(theta)) * dt
-    ub += (L(alpha, delta) * np.sin(alpha) / constants.mass - D(alpha, delta) *
-           np.cos(alpha) / constants.mass - q * wb - constants.gravity * np.sin(theta) +
-           thrust/constants.mass) * dt
-    wb += (- L(alpha, delta) * np.cos(alpha) / constants.mass - D(alpha, delta) *
-           np.sin(alpha) / constants.mass + q * ub + constants.gravity * np.cos(theta)) * dt
-    # Append new values to arrays
-    t += dt
-    tValues.append(round(t, 1))
-    thetaValues.append(theta)
-    qValues.append(q)
-    xeValues.append(xe)
-    zeValues.append(ze)
-    ubValues.append(ub)
-    wbValues.append(wb)
-    alphaValues.append(alpha)
-    gammaValues.append(gamma)
-    momentValues.append(moment)
-
-# Plot the results
-plt.plot(tValues, alphaValues, 'b-')
-plt.subplot(4, 2, 1)
-plt.plot(tValues, ubValues)
+plt.subplot(3, 2, 1)
+plt.plot(y.t, y.y[2])
 plt.xlabel('time')
 plt.ylabel('ub')
-plt.subplot(4, 2, 2)
-plt.plot(tValues, wbValues)
+
+plt.subplot(3, 2, 2)
+plt.plot(y.t, y.y[3])
 plt.xlabel('time')
 plt.ylabel('wb')
-plt.subplot(4, 2, 3)
-plt.plot(tValues, qValues)
+
+plt.subplot(3, 2, 3)
+plt.plot(y.t, y.y[0])
 plt.xlabel('time')
 plt.ylabel('q')
-plt.subplot(4, 2, 4)
-plt.plot(tValues, thetaValues)
+
+plt.subplot(3, 2, 4)
+plt.plot(y.t, y.y[1])
 plt.xlabel('time')
 plt.ylabel('theta')
-plt.subplot(4, 2, 5)
-plt.plot(tValues, gammaValues)
+
+plt.subplot(3, 2, 5)
+plt.plot(y.t, y.y[4])
 plt.xlabel('time')
-plt.ylabel('path angle')
-plt.subplot(4, 2, 6)
-plt.plot(tValues, zeValues)
+plt.ylabel('xe')
+
+plt.subplot(3, 2, 6)
+plt.plot(y.t, -y.y[5])
 plt.xlabel('time')
 plt.ylabel('ze')
-plt.subplot(4, 2, 7)
-plt.plot(tValues, alphaValues)
-plt.xlabel('time')
-plt.ylabel('alpha')
-plt.subplot(4, 2, 8)
-plt.plot(tValues, momentValues)
-plt.xlabel('time')
-plt.ylabel('moment')
+
+plt.tight_layout()  # Adjust the layout for better spacing
 plt.show()
