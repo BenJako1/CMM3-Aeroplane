@@ -99,15 +99,3 @@ K = 0.04
 def CD_func(x, a, b):
     return a + b * x**2.0
 [CD0, K], _ = optimize.curve_fit(CD_func, CL_list, CD_list, p0=[CD0, K])
-
-'''
-# Print constant values
-print(f"CLa = {CLa}")
-print(f"CL0 = {CL0}")
-print(f"CMa = {CMa}")
-print(f"CM0 = {CM0}")
-print(f"CLde = {CLde}")
-print(f"CMde = {CMde}")
-print(f"CD0 = {CD0}")
-print(f"K = {K}")
-'''
