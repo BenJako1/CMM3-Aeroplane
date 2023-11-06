@@ -1,0 +1,135 @@
+'''
+
+CMM3 Group 7 - Part B1 Attempt
+Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
+October-November 2023  
+
+'''
+
+# Import libraries & modules
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import optimize
+import forms
+import constants as c
+
+# Define the ranges for V and γ
+V_min = 50  # Minimum velocity (V)
+V_max = 150  # Maximum velocity (V)
+gamma_min = -0.1  # Minimum flight path angle (γ) in radians
+gamma_max = 0.1  # Maximum flight path angle (γ) in radians
+
+elevatorChange = 10  # in percent
+thrustChange = 10  # in percent
+
+pitchTime = 100  # Time in seconds after simulation start at which the values are changed
+climbTime = 400  # Duration of climb in seconds
+
+initialAltitude = 1000  # Altitude at t=0
+"""
+Class for handling the trim condition
+self notes class is responsible for finding the trim conditions for the airplane. 
+Trim conditions are the combination of parameters like angle of attack (alpha), elevator angle (delta),
+and thrust (T) that allow the airplane to maintain steady-level flight at a given velocity and flight 
+path angle (gamma).
+"""
+
+class Trim:
+    def __init__(self, trimVelocity, trimGamma):
+        self.velocity = trimVelocity
+        self.gamma = trimGamma
+        
+        # Solve for alpha
+        initial_guess = 0.01  # Provide an initial guess
+        self.alpha = optimize.newton(self.alpha_trim_func, initial_guess)
+        
+        # Solve for delta
+        self.delta = -(c.CM0 + c.CMa * self.alpha) / c.CMde
+    
+        # Calculating other variables to output
+        self.theta = self.alpha + trimGamma
+        self.ub = trimVelocity * np.cos(self.alpha)
+        self.wb = trimVelocity * np.sin(self.alpha)
+    
+        # Calculating thrust
+        self.thrust = forms.Engine_Thrust(self.alpha, self.delta, self.theta, trimVelocity)
+        
+"""
+optimize.newton function to find the alpha that satisfies a specific equation 
+(given by self.alpha_trim_func). This equation ensures that the aircraft's pitch moment (CM) is zero.
+"""
+    def alpha_trim_func(self, alpha):
+        self.delta = -(c.CM0 + c.CMa * alpha) / c.CMde
+
+        return (-forms.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - forms.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(alpha + self.gamma))
+
+# Backend class to handle data and store diff. equations (should be a clearer name)
+#elevator angle based on the found alpha
+class Visualise():
+#display of results!    
+
+    # Simulations visualization
+    def Display(self, Data, initialAltitude=0):
+        # Split data into components
+        self.t = Data.t
+        self.ub = Data.y[0]
+        self.wb = Data.y[1]
+        self.theta = Data.y[2]
+        self.q = Data.y[3]
+        self.xe = Data.y[4]
+        self.ze = Data.y[5]
+        
+        # Calculate altitude because ze is reversed for some reason
+        self.altitude = self.ze * -1
+        self.altitude += initialAltitude
+
+        # Create plots
+        plt.figure(figsize=(12, 6))
+        
+        # Plot Thrust vs. Velocity
+        plt.subplot(2, 1, 1)
+        plt.scatter(V_values, thrust_values, marker='o', s=10)
+        plt.xlabel('Velocity (V)')
+        plt.ylabel('Thrust (T)')
+        plt.title('Thrust vs. Velocity')
+
+        # Plot Elevator Angle vs. Flight Path Angle
+        plt.subplot(2, 1, 2)
+        plt.scatter(gamma_values, delta_elevator_values, marker='o', s=10)
+        plt.xlabel('Flight Path Angle (γ)')
+        plt.ylabel('Elevator Angle (δE)')
+        plt.title('Elevator Angle vs. Flight Path Angle')
+
+        plt.tight_layout()
+        plt.show()
+
+# Initialize lists to store results
+V_values = []
+gamma_values = []
+thrust_values = []
+delta_elevator_values = []
+
+# Loop over V and γ values
+#list of results
+#nested loop to go through different values of velocity and pathg angle
+for V in range(V_min, V_max+1, 10):  # Adjust the step size as needed
+    for gamma in np.arange(gamma_min, gamma_max, 0.01):  # Adjust the step size as needed
+        # Perform trim calculation for the current V and γ
+        trim_condition = Trim(V, gamma)
+        V_values.append(V)
+        gamma_values.append(gamma)
+        thrust_values.append(trim_condition.thrust)
+        delta_elevator_values.append(trim_condition.delta)
+
+# Create an instance of the Visualise class
+visualization = Visualise()
+
+# Display the results
+visualization.Display(y, initialAltitude)
+
+"""
+iterates through different combinations of velocity and flight path angle, 
+calculate the trim conditions for each combination, and stores the results 
+in lists for plotting. This helps visualize how thrust and elevator angle change 
+with variations in velocity and flight path angle.
+"""
