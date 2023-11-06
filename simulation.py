@@ -22,12 +22,12 @@ velocity_0 = 100 # Velocity in m/s
 gamma_0 = 0 # Path angle in radians
 
 pitchTime = 100 # Time in seconds after simulationstart at which the values are changed
-climbTime = 400 # Duration of climb in seconds
+climbTime = 300 # Duration of climb in seconds
 
 elevatorChange = 10 # in percent
-thrustChange = 10 # in percent
+thrustChange = 0 # in percent
 
-initialAltitude = 1000 # Altitude at t=0
+initialAltitude = 2000 # Altitude at t=0
 
 #------------------------------------------------------------------------------
 # Class for handling the trim condition
@@ -66,10 +66,10 @@ class Visualise():
     def Display(self, Data,initialAltitude = 0):
         # Split data into components
         self.t = Data.t
-        self.ub = Data.y[0]
-        self.wb = Data.y[1]
-        self.theta = Data.y[2]
-        self.q = Data.y[3]
+        self.q = Data.y[0]
+        self.theta = Data.y[1]
+        self.ub = Data.y[2]
+        self.wb = Data.y[3]
         self.xe = Data.y[4]
         self.ze = Data.y[5]
         
@@ -115,6 +115,8 @@ class Simulation(Visualise):
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
         
+        print(trimParams.alpha, trimParams.theta)
+        
         # IVP library
         y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, 0], t_eval=np.linspace(0,t_end,t_end*50))
         
@@ -136,4 +138,4 @@ class Simulation(Visualise):
         return forms.Equations(t, y, delta, thrust)
 
 # Running the simulation
-Simulation(100,0,1000)
+Simulation(100,0,300)
