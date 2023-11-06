@@ -11,29 +11,46 @@ October-November 2023
 #in the main script. This module imports variables from the 'constants'module so that it recognizes variables such as 
 #CL0, CLa, and so on. 
 import numpy as np
-import constants
+import constants as c
 
-def Coefficient_of_Lift(a, d):
-    return constants.CL0 + constants.CLa * np.rad2deg(a) + constants.CLde * np.rad2deg(d)
+def Coefficient_of_Lift(alpha, delta):
+    return c.CL0 + c.CLa * alpha + c.CLde * delta
 
-def Coefficient_of_Moment(a, d):
-    return constants.CM0 + constants.CMa * np.rad2deg(a) + constants.CMde * np.rad2deg(d)
+def Coefficient_of_Moment(alpha, delta):
+    return c.CM0 + c.CMa * alpha + c.CMde * delta
 
-def Coefficient_of_Drag(a, d):
-    return constants.CD0 + constants.K * (Coefficient_of_Lift(a, d))**2
+def Coefficient_of_Drag(alpha, delta):
+    return c.CD0 + c.K * (Coefficient_of_Lift(alpha, delta))**2
 
-def Lift(a, d, velocity):
-    return (0.5 * constants.air_density * velocity**2 * constants.wing_surface *
-            Coefficient_of_Lift(a, d))
+def Lift(alpha, delta, velocity):
+    return (0.5 * c.air_density * velocity**2 * c.wing_surface *
+            Coefficient_of_Lift(alpha, delta))
 
-def Drag(a, d, velocity):
-    return (0.5 * constants.air_density * velocity**2 * constants.wing_surface *
-            Coefficient_of_Drag(a, d))
+def Drag(alpha, delta, velocity):
+    return (0.5 * c.air_density * velocity**2 * c.wing_surface *
+            Coefficient_of_Drag(alpha, delta))
 
 def Moment(a, d, velocity):
-    return (0.5 * constants.air_density * velocity**2 * constants.wing_surface *
-           constants.cbar * Coefficient_of_Moment(a, d))
+    return (0.5 * c.air_density * velocity**2 * c.wing_surface *
+           c.cbar * Coefficient_of_Moment(a, d))
 
 def Engine_Thrust(alpha, delta, theta, velocity):
-    return (Drag(alpha, delta, velocity) * np.cos(alpha) - Lift(alpha, delta, velocity) * np.sin(alpha) + constants.mass * constants.gravity * np.sin(theta))
- 
+    return (Drag(alpha, delta, velocity) * np.cos(alpha) - Lift(alpha, delta, velocity) * np.sin(alpha) + c.mass * c.gravity * np.sin(theta))
+
+# Definition of differential equations
+def Equations ( t, y, delta, thrust):
+    q, theta, ub, wb, xe, ze = y
+    
+    alpha = np.arctan2(wb, ub)
+    velocity = np.sqrt(ub**2 + wb**2)
+    
+    dq_dt = (Moment(alpha, delta, velocity)/c.inertia_yy)
+    dtheta_dt = q
+    
+    dub_dt = (Lift(alpha, delta, velocity) * np.sin(alpha) - Drag(alpha, delta, velocity) * np.cos(alpha) - c.mass * q * wb - c.mass * c.gravity * np.sin(theta) + thrust) / c.mass
+    dwb_dt = (-Lift(alpha, delta, velocity) * np.cos(alpha) - Drag(alpha, delta, velocity) * np.sin(alpha) + c.mass * q * ub + c.mass * c.gravity * np.cos(theta)) / c.mass
+    
+    dxe_dt = ub * np.cos(theta) + wb * np.sin(theta)
+    dze_dt = - ub * np.sin(theta) + wb * np.cos(theta)
+    
+    return dq_dt, dtheta_dt, dub_dt, dwb_dt, dxe_dt, dze_dt
