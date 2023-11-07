@@ -1,70 +1,62 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import optimize
 import forms
 import constants as c
- 
+
 V_min = 50
 V_max = 150
 gamma_min = -0.1
 gamma_max = 0.1
- 
+
 V_step = 10
 gamma_step = np.deg2rad(2)
- 
-V_values = []
-gamma_values = []
-T_values = []
-δE_values = []
- 
+
+V_values = np.arange(V_min, V_max, V_step)
+gamma_values = np.arange(gamma_min, gamma_max, gamma_step)
+
+T_values = np.empty((len(V_values), len(gamma_values)))
+δE_values = np.empty((len(V_values), len(gamma_values)))
+
 class Trim:
     def __init__(self, trimVelocity, trimGamma):
         self.velocity = trimVelocity
         self.gamma = trimGamma
- 
         initial_guess = 0.01
         self.alpha = optimize.newton(self.alpha_trim_func, initial_guess)
- 
         self.delta = -(c.CM0 + c.CMa * self.alpha) / c.CMde
- 
         self.theta = self.alpha + trimGamma
         self.ub = trimVelocity * np.cos(self.alpha)
         self.wb = trimVelocity * np.sin(self.alpha)
- 
         self.thrust = forms.Engine_Thrust(self.alpha, self.delta, self.theta, trimVelocity)
- 
+
     def alpha_trim_func(self, alpha):
         self.delta = -(c.CM0 + c.CMa * alpha) / c.CMde
- 
         return (-forms.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - forms.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(self.gamma + self.gamma))
- 
-for V in range(V_min, V_max, V_step):
-    for γ in np.arange(gamma_min, gamma_max, gamma_step):
+
+for i, V in enumerate(V_values):
+    for j, γ in enumerate(gamma_values):
         trim_condition = Trim(V, γ)
- 
-        V_values.append(V)
-        gamma_values.append(γ)
- 
-        T_values.append(trim_condition.thrust)
-        δE_values.append(np.rad2deg(trim_condition.delta))
- 
+        T_values[i, j] = trim_condition.thrust
+        δE_values[i, j] = np.rad2deg(trim_condition.delta)
+
 plt.figure(figsize=(12, 6))
 plt.subplot(1, 2, 1)
-plt.plot(V_values, T_values, label='Thrust (T)')
+for j, γ in enumerate(gamma_values):
+    plt.plot(V_values, T_values[:, j], label=f'γ = {np.rad2deg(γ)}°')
 plt.xlabel('Velocity (V)')
 plt.ylabel('Thrust (T)')
 plt.title('Thrust vs. Velocity')
 plt.legend()
- 
+
 plt.subplot(1, 2, 2)
-plt.plot(np.rad2deg(gamma_values), δE_values, label='Elevator Angle (δE)')
+for i, V in enumerate(V_values):
+    plt.plot(np.rad2deg(gamma_values), δE_values[i, :], label=f'V = {V} m/s')
 plt.xlabel('Flight Path Angle (γ) (degrees)')
 plt.ylabel('Elevator Angle (δE) (degrees)')
 plt.title('Elevator Angle vs. Flight Path Angle')
 plt.legend()
- 
+
 plt.tight_layout()
- 
+
 plt.show()
- 
