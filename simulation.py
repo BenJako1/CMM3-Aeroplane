@@ -29,6 +29,8 @@ thrustChange = 0 # in percent
 
 initialAltitude = 2000 # Altitude at t=0
 
+simTime = 500
+
 #------------------------------------------------------------------------------
 # Class for handling the trim condition
 
@@ -76,7 +78,7 @@ class Visualise():
         self.altitude = self.ze * -1
         self.altitude += initialAltitude
         
-        fig, ax = plt.subplots(3, 2, figsize=(12, 10))
+        fig, ax = plt.subplots(3, 2, figsize=(6, 5))
 
         ax[0, 0].plot(self.t, self.ub)
         ax[0, 0].set_title("$u_{B}$ Body Axis Velocity vs Time", fontsize=12)
@@ -111,14 +113,14 @@ class Visualise():
 
         plt.tight_layout()
 
-# Show the plot. tyigh layout makes it square and neat
-        plt.show()
+        # Output the plot
+        return fig
 
 #------------------------------------------------------------------------------
 # Simulation calculation and control class
 
 class Simulation(Visualise):
-    def __init__(self, trimVelocity, trimGamma, t_end):
+    def __init__(self, trimVelocity, trimGamma, pitchTime, climbTime, elevatorChange, thrustChange, t_end):
         
         # Find trim conditions
         trimParams = Trim(trimVelocity, trimGamma)
@@ -126,10 +128,9 @@ class Simulation(Visualise):
         
         # IVP library
         y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, 0], t_eval=np.linspace(0,t_end,t_end*50))
-        
-        # Send data to "Display" function to be plotted
-        self.Display(y, initialAltitude)
 
+        self.data = y
+        
     # Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
         if t > pitchTime and t < pitchTime + climbTime:
@@ -144,5 +145,6 @@ class Simulation(Visualise):
 
         return forms.Equations(t, y, delta, thrust)
 
-# Running the simulation
-Simulation(100,0,300)
+if __name__ == "__main__":
+    # Running the simulation
+    Simulation(velocity_0, gamma_0, pitchTime, climbTime, elevatorChange, thrustChange, simTime)
