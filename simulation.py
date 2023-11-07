@@ -1,150 +1,144 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
+"""
+Created on Sun Nov  5 16:05:39 2023
 
-CMM3 Group 7
-Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
-October-November 2023  
+@author: mauri + nick 
+https://tkdocs.com/tutorial/windows.html
+"""
 
-'''
-
-# Import libraries & modules
+# importing modules
+import constants 
 import numpy as np
+import math
 import matplotlib.pyplot as plt
-from scipy import integrate, optimize
-import forms
-import constants as c
+from scipy import integrate
+from scipy.optimize import newton
+from tkinter import *
+from tkinter import ttk
 
 #------------------------------------------------------------------------------
-# User parameters (to be replaced with UI)
+#imported from forms cos idk how to pull values from the interface from another module.
+#define the formulas of the aircraft dynamics
+#imports variables from the 'constants'module so that it recognizes variables such as CL0, CLa, and so on
 
-velocity_0 = 100 # Velocity in m/s
-gamma_0 = 0 # Path angle in radians
+def Coefficient_of_Lift(a, d):
+    return constants.CL0 + constants.CLa * np.rad2deg(a) + constants.CLde * np.rad2deg(d)
 
-pitchTime = 100 # Time in seconds after simulationstart at which the values are changed
-climbTime = 100 # Duration of climb in seconds
+def Coefficient_of_Moment(a, d):
+    return constants.CM0 + constants.CMa * np.rad2deg(a) + constants.CMde * np.rad2deg(d)
 
-climbVelocity = velocity_0
-climbGamma = np.deg2rad(2)
-max_altitude = 1050
+def Coefficient_of_Drag(a, d):
+    return constants.CD0 + constants.K * (Coefficient_of_Lift(a, d))**2
 
-elevatorChange = 10 # in percent
-thrustChange = 0 # in percent
+def Lift(a, d, velocity):
+    return (0.5 * constants.air_density * velocity**2 * constants.wing_surface *
+            Coefficient_of_Lift(a, d))
 
-initialAltitude = 1000 # Altitude at t=0
+def Drag(a, d, velocity):
+    return (0.5 * constants.air_density * velocity**2 * constants.wing_surface *
+            Coefficient_of_Drag(a, d))
+
+def Moment(a, d, velocity):
+    return (0.5 * constants.air_density * velocity**2 * constants.wing_surface *
+           constants.cbar * Coefficient_of_Moment(a, d))
+
+def Engine_Thrust(alpha, delta, theta, velocity):
+    return (Drag(alpha, delta, velocity) * np.cos(alpha) - Lift(alpha, delta, velocity) * np.sin(alpha) + constants.mass * constants.gravity * np.sin(theta))
+
+
+#Here we are defining a function for the trim conditions 
+def Trim():
+    
+    #calling values from the interface inputs
+    velocity=float(velocity_entry.get())
+    gamma=float(gamma_entry.get())
+    
+    def alpha_trim_func(alpha):
+        alpha_deg = np.rad2deg(alpha)
+        delta_deg = -(constants.CM0 + constants.CMa * alpha_deg) / constants.CMde
+
+        CL = constants.CL0 + (constants.CLa * alpha_deg) + (constants.CLde * delta_deg)
+        CD = constants.CD0 + constants.K * (CL**2)
+
+        Lift_component = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * CL
+        Drag_component = 0.5 * constants.air_density * (velocity**2) * constants.wing_surface * CD
+        # Print intermediate values
+        
+        return (-Lift_component * np.cos(alpha) - Drag_component * np.sin(alpha) + constants.mass * constants.gravity * np.cos(alpha + gamma))
+   
+    # Solve for alpha and delta
+    initial_guess = 0.01  # Provide an initial guess
+    alpha = newton(alpha_trim_func, initial_guess)
+    delta = np.deg2rad(-(constants.CM0 + constants.CMa * np.rad2deg(alpha)) / constants.CMde)
+    
+    # Calculating other variables to output
+    theta = alpha + gamma
+    ub = velocity * np.cos(alpha)
+    wb = velocity * np.sin(alpha)
+
+    # Calculating Thrust
+    thrust = Engine_Thrust(alpha, delta, theta, velocity)
+    
+    # Sets the variables in the labels in the interface
+    return alpha_entry.set(alpha), delta_entry.set(delta), q_entry.set(0), theta_entry.set(theta), ub_entry.set(ub), wb_entry.set(wb), thrust_entry.set(thrust)
 
 #------------------------------------------------------------------------------
-# Class for handling the trim condition
+# interface!!!!!!!!!!!!
 
-class Trim:
-    def __init__(self, trimVelocity, trimGamma):
-        self.velocity = trimVelocity
-        self.gamma = trimGamma
-        
-        # Solve for alpha
-        initial_guess = 0.01  # Provide an initial guess
-        self.alpha = optimize.newton(self.alpha_trim_func, initial_guess)
-        
-        # Solve for delta
-        self.delta = -(c.CM0 + c.CMa * self.alpha) / c.CMde
-    
-        # Calculating other variables to output
-        self.theta = self.alpha + trimGamma
-        self.ub = trimVelocity * np.cos(self.alpha)
-        self.wb = trimVelocity * np.sin(self.alpha)
-    
-        # Calculating thrust
-        self.thrust = forms.Engine_Thrust(self.alpha, self.delta, self.theta, trimVelocity)
-        
-    def alpha_trim_func(self, alpha):
-        self.delta = -(c.CM0 + c.CMa * alpha) / c.CMde
+#root is like the interface
+root = Tk()
+root.title("Plane Simulation User Interface")
 
-        return (-forms.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - forms.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(alpha + self.gamma))
+#padding around the interface
+mainframe = ttk.Frame(root, padding="3 3 10 10")
+mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
 
-#------------------------------------------------------------------------------
-# Backend class to handle data and store diff. equations (should be a clearer name)
+#defining variables for the velocity and gamma input
+velocity_entry = StringVar()
+velocity_entry = ttk.Entry(mainframe, width=15, textvariable=velocity_entry)
+velocity_entry.grid(column=2, row=1, sticky=(W, E))
+gamma_entry = StringVar()
+gamma_entry = ttk.Entry(mainframe, width=7, textvariable=gamma_entry)
+gamma_entry.grid(column=2, row=2, sticky=(W, E))
 
-class Visualise():
-    
-    # Simulations visualisation
-    def Display(self, Data,initialAltitude = 0):
-        # Split data into components
-        self.t = Data.t
-        self.q = Data.y[0]
-        self.theta = Data.y[1]
-        self.ub = Data.y[2]
-        self.wb = Data.y[3]
-        self.xe = Data.y[4]
-        self.ze = Data.y[5]
-        
-        # Calculate altitude because ze is reversed for some reason
-        self.altitude = -self.ze
+#defining variables for alpha, delta, q... etc and the labels that display these variables
+alpha_entry = StringVar()
+ttk.Label(mainframe, textvariable=alpha_entry).grid(column=2, row=4, sticky=(W, E))
+delta_entry = StringVar()
+ttk.Label(mainframe, textvariable=delta_entry).grid(column=2, row=5, sticky=(W, E))
+q_entry = StringVar()
+ttk.Label(mainframe, textvariable=q_entry).grid(column=2, row=6, sticky=(W, E))
+thrust_entry = StringVar()
+ttk.Label(mainframe, textvariable=thrust_entry).grid(column=2, row=7, sticky=(W, E))
+theta_entry = StringVar()
+ttk.Label(mainframe, textvariable=theta_entry).grid(column=2, row=8, sticky=(W, E))
+ub_entry = StringVar()
+ttk.Label(mainframe, textvariable=ub_entry).grid(column=2, row=9, sticky=(W, E))
+wb_entry = StringVar()
+ttk.Label(mainframe, textvariable=wb_entry).grid(column=2, row=10, sticky=(W, E))
 
-        # Create plot
-        fig,ax = plt.subplots(3, 2)
-        
-        # Format axes
-        ax[0,0].set_ylabel("$u_{B}$", rotation='horizontal')
-        ax[0,0].set_xlabel("t")
-        ax[0,1].set_ylabel("$w_{B}$", rotation='horizontal')
-        ax[0,1].set_xlabel("t")
-        ax[1,0].set_ylabel("${\Theta}$", rotation='horizontal')
-        ax[1,0].set_xlabel("t")
-        ax[1,1].set_ylabel("q", rotation='horizontal')
-        ax[1,1].set_xlabel("t")
-        ax[2,0].set_ylabel("$x_{e}$", rotation='horizontal')
-        ax[2,0].set_xlabel("t")
-        ax[2,1].set_ylabel("Altitude h")
-        ax[2,1].set_xlabel("t")
-        
-        # Plot data
-        ax[0,0].plot(self.t, self.ub)
-        ax[0,1].plot(self.t, self.wb)
-        ax[1,0].plot(self.t, self.theta)
-        ax[1,1].plot(self.t, self.q)
-        ax[2,0].plot(self.t, self.xe)
-        ax[2,1].plot(self.t, self.altitude)
-        
-        # Show
-        plt.show()
+#calculate button that calls on trim function
+ttk.Button(mainframe, text="Calculate", command=Trim).grid(column=1, row=3, sticky=W)
 
-#------------------------------------------------------------------------------
-# Simulation calculation and control class
+#labels that display text
+ttk.Label(mainframe, text="velocity:").grid(column=1, row=1, sticky=W)
+ttk.Label(mainframe, text="gamma:").grid(column=1, row=2, sticky=W)
+ttk.Label(mainframe, text="alpha:").grid(column=1, row=4, sticky=W)
+ttk.Label(mainframe, text="delta:").grid(column=1, row=5, sticky=W)
+ttk.Label(mainframe, text="q:").grid(column=1, row=6, sticky=W)
+ttk.Label(mainframe, text="thrust:").grid(column=1, row=7, sticky=W)
+ttk.Label(mainframe, text="theta:").grid(column=1, row=8, sticky=W)
+ttk.Label(mainframe, text="ub:").grid(column=1, row=9, sticky=W)
+ttk.Label(mainframe, text="wb:").grid(column=1, row=10, sticky=W)
 
-class Simulation(Visualise):
-    def __init__(self, trimVelocity, trimGamma, t_end):
-        
-        # Find trim conditions
-        trimParams = Trim(trimVelocity, trimGamma)
-        self.Trim = trimParams
-        
-        trimParams2 = Trim(climbVelocity, climbGamma)
-        self.Trim2 = trimParams2
-        
-        finalAltitude = initialAltitude
-        self.climbTime = 0
-        
-        while finalAltitude < max_altitude:
-            self.climbTime += 1
-            # IVP library
-            y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, initialAltitude], t_eval=np.linspace(0,t_end,t_end*50))
-            finalAltitude = y.y[5][len(y.y[5]) - 1]
-            print(self.climbTime, finalAltitude)
-        
-        # Send data to "Display" function to be plotted
-        self.Display(y, initialAltitude)
-        print(self.climbTime)
-    
-    # Function to change delta and thrust during IVP calculations
-    def SimControl(self, t, y):
-        if t > pitchTime and t < pitchTime + self.climbTime:
-            delta = self.Trim2.delta
-            thrust = self.Trim2.thrust
-        else:
-            delta = self.Trim.delta
-            thrust = self.Trim.thrust
+#idk what any of this does runs in a loop or something lol
+for child in mainframe.winfo_children(): 
+    child.grid_configure(padx=5, pady=5)
 
-        return forms.Equations(t, y, delta, thrust)
+velocity_entry.focus()
+root.bind("<Return>", calculate)
 
-# Running the simulation
-Simulation(100,0,750)
+root.mainloop()
+
