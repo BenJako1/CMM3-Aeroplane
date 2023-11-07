@@ -59,11 +59,10 @@ class Trim:
 
 #------------------------------------------------------------------------------
 # Backend class to handle data and store diff. equations (should be a clearer name)
-
 class Visualise():
     
-    # Simulations visualisation
-    def Display(self, Data,initialAltitude = 0):
+    # Plotting aircraft parameter response
+    def Display(self, Data, initialAltitude=0):
         # Split data into components
         self.t = Data.t
         self.q = Data.y[0]
@@ -76,33 +75,43 @@ class Visualise():
         # Calculate altitude because ze is reversed for some reason
         self.altitude = self.ze * -1
         self.altitude += initialAltitude
+        
+        fig, ax = plt.subplots(3, 2, figsize=(12, 10))
 
-        # Create plot
-        fig,ax = plt.subplots(3, 2)
+        ax[0, 0].plot(self.t, self.ub)
+        ax[0, 0].set_title("$u_{B}$ Body Axis Velocity vs Time", fontsize=12)
+        ax[0, 0].set_ylabel("$u_{B}$ [m/s]", rotation='horizontal')
+        ax[0, 0].set_xlabel("t [s]")
+
+        ax[0, 1].plot(self.t, self.wb)
+        ax[0, 1].set_title("$w_{B}$ Body Axis Velocity vs Time", fontsize=12)
+        ax[0, 1].set_ylabel("$w_{B}$ [m/s]", rotation='horizontal')
+        ax[0, 1].set_xlabel("t [s]")
         
-        # Format axes
-        ax[0,0].set_ylabel("$u_{B}$", rotation='horizontal')
-        ax[0,0].set_xlabel("t")
-        ax[0,1].set_ylabel("$w_{B}$", rotation='horizontal')
-        ax[0,1].set_xlabel("t")
-        ax[1,0].set_ylabel("${\Theta}$", rotation='horizontal')
-        ax[1,0].set_xlabel("t")
-        ax[1,1].set_ylabel("q", rotation='horizontal')
-        ax[1,1].set_xlabel("t")
-        ax[2,0].set_ylabel("$x_{e}$", rotation='horizontal')
-        ax[2,0].set_xlabel("t")
-        ax[2,1].set_ylabel("Altitude h")
-        ax[2,1].set_xlabel("t")
-        
-        # Plot data
-        ax[0,0].plot(self.t, self.ub)
-        ax[0,1].plot(self.t, self.wb)
-        ax[1,0].plot(self.t, self.theta)
-        ax[1,1].plot(self.t, self.q)
-        ax[2,0].plot(self.t, self.xe)
-        ax[2,1].plot(self.t, self.altitude)
-        
-        # Show
+        ax[1, 0].plot(self.t, self.theta)
+        ax[1, 0].set_title("${\Theta}$ Pitch Angle vs Time", fontsize=12)
+        ax[1, 0].set_ylabel("${\Theta}$ [$^{0}$]", rotation='horizontal')
+        ax[1, 0].set_xlabel("t [s]")
+
+
+        ax[1, 1].plot(self.t, self.q)
+        ax[1, 1].set_title("q Angular Velocity vs Time", fontsize=12)
+        ax[1, 1].set_ylabel("q [rad/s]", rotation='horizontal')
+        ax[1, 1].set_xlabel("t [s]")
+
+        ax[2, 0].plot(self.t, self.xe)
+        ax[2, 0].set_title("$x_{E}$ Horizontal Position vs Time", fontsize=12)
+        ax[2, 0].set_ylabel("$x_{e}$ [m]")
+        ax[2, 0].set_xlabel("t [s]")
+
+        ax[2, 1].plot(self.t, self.altitude)
+        ax[2, 1].set_title("h Altitude  vs Time", fontsize=12)
+        ax[2, 1].set_ylabel("Altitude h [m]")
+        ax[2, 1].set_xlabel("t [s]")
+
+        plt.tight_layout()
+
+# Show the plot. tyigh layout makes it square and neat
         plt.show()
 
 #------------------------------------------------------------------------------
@@ -120,7 +129,7 @@ class Simulation(Visualise):
         
         # Send data to "Display" function to be plotted
         self.Display(y, initialAltitude)
-    
+
     # Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
         if t > pitchTime and t < pitchTime + climbTime:
