@@ -26,11 +26,14 @@ max_altitude = 2000
 
 climbVelocity = velocity_0
 climbGamma = np.deg2rad(2)
+climbTimeGuess = 200
+climbStep = 0.5
 
 elevatorChange = 10 # in percent
 thrustChange = 0 # in percent
 
 initialAltitude = 1000 # Altitude at t=0
+maxAltitude = 2000
 
 #------------------------------------------------------------------------------
 # Class for handling the trim condition
@@ -121,15 +124,23 @@ class Simulation(Visualise):
         trimParams2 = Trim(climbVelocity, climbGamma)
         self.Trim2 = trimParams2
         
-        # IVP library
-        y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0,t_end,t_end*50))
+        self.climbTime = climbTimeGuess
         
+        finalAltitude = initialAltitude
+        
+        while finalAltitude < maxAltitude:
+            y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0,t_end,t_end*50))
+            finalAltitude = -y.y[5][len(y.y[5])-1]
+            
+            self.climbTime += climbStep
+            
         # Send data to "Display" function to be plotted
         self.Display(y, initialAltitude)
+        print(f"Climb Duration: {self.climbTime}s")
     
     # Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
-        if t > pitchTime and y[5] > -max_altitude:
+        if t > pitchTime and t < pitchTime + self.climbTime:
             delta = self.Trim2.delta
             thrust = self.Trim2.thrust
         else:
