@@ -55,7 +55,9 @@ class Trim:
     def alpha_trim_func(self, alpha):
         self.delta = -(c.CM0 + c.CMa * alpha) / c.CMde
 
-        return (-forms.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - forms.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(alpha + self.gamma))
+        return (-forms.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) 
+                - forms.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) 
+                + c.mass * c.gravity * np.cos(alpha + self.gamma))
 
 #------------------------------------------------------------------------------
 # Backend class to handle data and store diff. equations (should be a clearer name)
@@ -88,15 +90,14 @@ class Visualise():
         ax[0, 1].set_ylabel("$w_{B}$ [m/s]", rotation='horizontal')
         ax[0, 1].set_xlabel("t [s]")
         
-        ax[1, 0].plot(self.t, self.theta)
-        ax[1, 0].set_title("${\Theta}$ Pitch Angle vs Time", fontsize=12)
-        ax[1, 0].set_ylabel("${\Theta}$ [$^{0}$]", rotation='horizontal')
+        ax[1, 0].plot(self.t, self.q)
+        ax[1, 0].set_title("q Angular Velocity vs Time", fontsize=12)
+        ax[1, 0].set_ylabel("q [rad/s]", rotation='horizontal')
         ax[1, 0].set_xlabel("t [s]")
 
-
-        ax[1, 1].plot(self.t, self.q)
-        ax[1, 1].set_title("q Angular Velocity vs Time", fontsize=12)
-        ax[1, 1].set_ylabel("q [rad/s]", rotation='horizontal')
+        ax[1, 1].plot(self.t, self.theta)
+        ax[1, 1].set_title("${\Theta}$ Pitch Angle vs Time", fontsize=12)
+        ax[1, 1].set_ylabel("${\Theta}$ [$^{0}$]", rotation='horizontal')
         ax[1, 1].set_xlabel("t [s]")
 
         ax[2, 0].plot(self.t, self.xe)
@@ -119,7 +120,6 @@ class Visualise():
 
 class Simulation(Visualise):
     def __init__(self, trimVelocity, trimGamma, t_end):
-        
         # Find trim conditions
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
@@ -130,19 +130,17 @@ class Simulation(Visualise):
         # Send data to "Display" function to be plotted
         self.Display(y, initialAltitude)
 
-    # Function to change delta and thrust during IVP calculations
+# Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
-        if t > pitchTime and t < pitchTime + climbTime:
+        if pitchTime < t < pitchTime + climbTime:
             delta = self.Trim.delta * (1 + elevatorChange/100)
-        else:
-            delta = self.Trim.delta
-
-        if t > pitchTime and t < pitchTime + climbTime:
             thrust = self.Trim.thrust * (1 + thrustChange/100)
         else:
-            thrust = self.Trim.thrust
+                delta = self.Trim.delta
+                thrust = self.Trim.thrust
 
         return forms.Equations(t, y, delta, thrust)
 
 # Running the simulation
 Simulation(100,0,300)
+#Simulation(trimvelocity, trimgamma, t_end)
