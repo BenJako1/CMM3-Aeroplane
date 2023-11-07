@@ -22,16 +22,12 @@ velocity_0 = 100 # Velocity in m/s
 gamma_0 = 0 # Path angle in radians
 
 pitchTime = 100 # Time in seconds after simulationstart at which the values are changed
-climbTime = 100 # Duration of climb in seconds
-
-climbVelocity = velocity_0
-climbGamma = np.deg2rad(2)
-max_altitude = 1050
+climbTime = 300 # Duration of climb in seconds
 
 elevatorChange = 10 # in percent
 thrustChange = 0 # in percent
 
-initialAltitude = 1000 # Altitude at t=0
+initialAltitude = 2000 # Altitude at t=0
 
 #------------------------------------------------------------------------------
 # Class for handling the trim condition
@@ -78,7 +74,8 @@ class Visualise():
         self.ze = Data.y[5]
         
         # Calculate altitude because ze is reversed for some reason
-        self.altitude = -self.ze
+        self.altitude = self.ze * -1
+        self.altitude += initialAltitude
 
         # Create plot
         fig,ax = plt.subplots(3, 2)
@@ -118,33 +115,25 @@ class Simulation(Visualise):
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
         
-        trimParams2 = Trim(climbVelocity, climbGamma)
-        self.Trim2 = trimParams2
-        
-        finalAltitude = initialAltitude
-        self.climbTime = 0
-        
-        while finalAltitude < max_altitude:
-            self.climbTime += 1
-            # IVP library
-            y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, initialAltitude], t_eval=np.linspace(0,t_end,t_end*50))
-            finalAltitude = y.y[5][len(y.y[5]) - 1]
-            print(self.climbTime, finalAltitude)
+        # IVP library
+        y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, 0], t_eval=np.linspace(0,t_end,t_end*50))
         
         # Send data to "Display" function to be plotted
         self.Display(y, initialAltitude)
-        print(self.climbTime)
     
     # Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
-        if t > pitchTime and t < pitchTime + self.climbTime:
-            delta = self.Trim2.delta
-            thrust = self.Trim2.thrust
+        if t > pitchTime and t < pitchTime + climbTime:
+            delta = self.Trim.delta * (1 + elevatorChange/100)
         else:
             delta = self.Trim.delta
+
+        if t > pitchTime and t < pitchTime + climbTime:
+            thrust = self.Trim.thrust * (1 + thrustChange/100)
+        else:
             thrust = self.Trim.thrust
 
         return forms.Equations(t, y, delta, thrust)
 
 # Running the simulation
-Simulation(100,0,750)
+Simulation(100,0,300)
