@@ -9,7 +9,7 @@ October-November 2023
 '''
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import simulation
 
@@ -29,7 +29,7 @@ def run_Trim():
     except ValueError:
         # Handle the case where a non-numeric value is entered
         messagebox.showerror("Error", "Please enter numeric values.")
-    
+
 def run_Simulation():
     try:
         # Get values
@@ -43,57 +43,65 @@ def run_Simulation():
         sim = simulation.Simulation(velocity, gamma, pitchTime, climbTime, elevatorChange, thrustChange, 500)
         
         fig = sim.Display(sim.data)
-        canvas = FigureCanvasTkAgg(fig, master=root)
-        canvas.draw()
-        canvas.get_tk_widget().grid(row=0, column=3, columnspan=2)  # Adjust the row and column as needed
+        canvas = FigureCanvasTkAgg(fig, master=output_frame)
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # Use pack geometry manager
         
     except ValueError:
         # Handle the case where a non-numeric value is entered
         messagebox.showerror("Error", "Please enter numeric values.")
-        
+
 # Create the main application window
 root = tk.Tk()
 root.title("User Interface")
 
-# Create labels and entry fields for user input
-tk.Label(root, text="Velocity:").grid(row=0, column=0)
-entry1 = tk.Entry(root)
+# Create input frame
+input_frame = ttk.Frame(root)
+input_frame.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+# Create output frame
+output_frame = ttk.Frame(root)
+output_frame.grid(row=0, column=1, padx=10, pady=10, sticky="e")
+
+# Create labels and entry fields for user input in the input frame
+ttk.Label(input_frame, text="Velocity:").grid(row=0, column=0)
+entry1 = ttk.Entry(input_frame)
 entry1.grid(row=0, column=1)
 
-tk.Label(root, text="Path angle:").grid(row=1, column=0)
-entry2 = tk.Entry(root)
+ttk.Label(input_frame, text="Path angle:").grid(row=1, column=0)
+entry2 = ttk.Entry(input_frame)
 entry2.grid(row=1, column=1)
 
 # Create a button to run Trim
-run_button = tk.Button(root, text="Get Trim Parameters", command=run_Trim)
-run_button.grid(row=3, column=0, columnspan=2, pady=10)
+run_button = ttk.Button(input_frame, text="Get Trim Parameters", command=run_Trim)
+run_button.grid(row=2, column=0, columnspan=2, pady=10)
 
-# Create labels to display the output
-thrust_label = tk.Label(root, text="")
-thrust_label.grid(row=4, column=0, columnspan=2)
+# Create labels to display the output in the input frame
+thrust_label = ttk.Label(input_frame, text="")
+thrust_label.grid(row=3, column=0, columnspan=2)
 
-delta_label = tk.Label(root, text="")
-delta_label.grid(row=5, column=0, columnspan=2)
+delta_label = ttk.Label(input_frame, text="")
+delta_label.grid(row=4, column=0, columnspan=2)
 
-tk.Label(root, text="Pitch time:").grid(row=6, column=0)
-entry3 = tk.Entry(root)
-entry3.grid(row=6, column=1)
+# Add labels and entry fields for simulation parameters in the input frame
+ttk.Label(input_frame, text="Pitch time:").grid(row=5, column=0)
+entry3 = ttk.Entry(input_frame)
+entry3.grid(row=5, column=1)
 
-tk.Label(root, text="Climb time:").grid(row=7, column=0)
-entry4 = tk.Entry(root)
-entry4.grid(row=7, column=1)
+ttk.Label(input_frame, text="Climb time:").grid(row=6, column=0)
+entry4 = ttk.Entry(input_frame)
+entry4.grid(row=6, column=1)
 
-tk.Label(root, text="Elevator change (%):").grid(row=8, column=0)
-entry5 = tk.Entry(root)
-entry5.grid(row=8, column=1)
+ttk.Label(input_frame, text="Elevator change (%):").grid(row=7, column=0)
+entry5 = ttk.Entry(input_frame)
+entry5.grid(row=7, column=1)
 
-tk.Label(root, text="Thrust change (%):").grid(row=9, column=0)
-entry6 = tk.Entry(root)
-entry6.grid(row=9, column=1)
+ttk.Label(input_frame, text="Thrust change (%):").grid(row=8, column=0)
+entry6 = ttk.Entry(input_frame)
+entry6.grid(row=8, column=1)
 
-# Create a button to run the simulation
-run_button = tk.Button(root, text="Simulate", command=run_Simulation)
-run_button.grid(row=10, column=0, columnspan=2, pady=10)
+# Create a button to run the simulation in the input frame
+run_button = ttk.Button(input_frame, text="Simulate", command=run_Simulation)
+run_button.grid(row=9, column=0, columnspan=2, pady=10)
 
 # Start the Tkinter event loop
 root.mainloop()

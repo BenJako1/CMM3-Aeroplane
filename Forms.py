@@ -30,9 +30,9 @@ def Drag(alpha, delta, velocity):
     return (0.5 * c.air_density * velocity**2 * c.wing_surface *
             Coefficient_of_Drag(alpha, delta))
 
-def Moment(a, d, velocity):
+def Moment(alpha, delta, velocity):
     return (0.5 * c.air_density * velocity**2 * c.wing_surface *
-           c.cbar * Coefficient_of_Moment(a, d))
+           c.cbar * Coefficient_of_Moment(alpha, delta))
 
 def Engine_Thrust(alpha, delta, theta, velocity):
     return (Drag(alpha, delta, velocity) * np.cos(alpha) - Lift(alpha, delta, velocity) * np.sin(alpha) + c.mass * c.gravity * np.sin(theta))
