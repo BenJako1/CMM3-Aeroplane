@@ -115,8 +115,6 @@ class Simulation(Visualise):
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
         
-        print(trimParams.alpha, trimParams.theta)
-        
         # IVP library
         y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, 0], t_eval=np.linspace(0,t_end,t_end*50))
         
