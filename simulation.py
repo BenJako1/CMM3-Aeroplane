@@ -61,7 +61,7 @@ class Trim:
 # Backend class to handle data and store diff. equations (should be a clearer name)
 class Visualise():
     
-    # Simulations visualisation
+    # Plotting aircraft parameter response
     def Display(self, Data, initialAltitude=0):
         # Split data into components
         self.t = Data.t
@@ -111,121 +111,9 @@ class Visualise():
 
         plt.tight_layout()
 
-# Show the plot
+# Show the plot. tyigh layout makes it square and neat
         plt.show()
-# Plot data
-# (Assuming you have data to plot, replace the following lines with your actual plotting code)
-'''        
-ax[0,0].plot(self.t, self.ub)
-        ax[0,1].plot(self.t, self.wb)
-        ax[1,0].plot(self.t, self.theta)
-        ax[1,1].plot(self.t, self.q)
-        ax[2,0].plot(self.t, self.xe)
-        ax[2,1].plot(self.t, self.altitude)
-'''
-# Apply tight_layout() for better spacing
-        
 
-'''
-        fig, ax = plt.subplots(3, 2)
-
-        ax[0, 0].set_ylabel("$u_{B}$", rotation='horizontal')
-        ax[0, 0].set_xlabel("t")
-    
-        ax[0, 1].set_ylabel("$w_{B}$", rotation='horizontal')
-        ax[0, 1].set_xlabel("t")
-    
-        ax[1, 0].set_ylabel("${\Theta}$", rotation='horizontal')
-        ax[1, 0].set_xlabel("t")
-    
-        ax[1, 1].set_ylabel("q", rotation='horizontal')
-        ax[1, 1].set_xlabel("t")
-    
-        ax[2, 0].set_ylabel("$x_{e}$", rotation='horizontal')
-        ax[2, 0].set_xlabel("t")
-    
-        ax[2, 1].set_ylabel("Altitude h")
-        ax[2, 1].set_xlabel("t")
-    
-    # Plot data
-    # (Assuming you have data to plot, replace the following lines with your actual plotting code)
-        ax[0,0].plot(self.t, self.ub)
-        ax[0,1].plot(self.t, self.wb)
-        ax[1,0].plot(self.t, self.theta)
-        ax[1,1].plot(self.t, self.q)
-        ax[2,0].plot(self.t, self.xe)
-        ax[2,1].plot(self.t, self.altitude)
-    
-    # Apply tight_layout() for better spacing
-        plt.tight_layout()
-
-# Show the plot
-        plt.show()
-'''
-'''
-        # Create plot
-        plt.figure(figsize=(12, 10))
-
-        plt.subplot(3, 2, 1)
-        plt.plot(self.t, self.ub)
-        plt.xlabel('time')
-        plt.ylabel('ub')
-
-        plt.subplot(3, 2, 2)
-        plt.plot(self.t, self.wb)
-        plt.xlabel('time')
-        plt.ylabel('wb')
-
-        plt.subplot(3, 2, 3)
-        plt.plot(self.t, self.q)
-        plt.xlabel('time')
-        plt.ylabel('q')
-
-        plt.subplot(3, 2, 4)
-        plt.plot(self.t, self.theta)
-        plt.xlabel('time')
-        plt.ylabel('theta')
-
-        plt.subplot(3, 2, 5)
-        plt.plot(self.t, self.xe)
-        plt.xlabel('time')
-        plt.ylabel('xe')
-
-        plt.subplot(3, 2, 6)
-        plt.plot(self.t, self.ze)
-        plt.xlabel('time')
-        plt.ylabel('ze')
-
-        plt.tight_layout()  # Adjust the layout for better spacing
-        plt.show()
-'''
-'''
-        # Format axes
-        ax[0,0].set_ylabel("$u_{B}$", rotation='horizontal')
-        ax[0,0].set_xlabel("t")
-        ax[0,1].set_ylabel("$w_{B}$", rotation='horizontal')
-        ax[0,1].set_xlabel("t")
-        ax[1,0].set_ylabel("${\Theta}$", rotation='horizontal')
-        ax[1,0].set_xlabel("t")
-        ax[1,1].set_ylabel("q", rotation='horizontal')
-        ax[1,1].set_xlabel("t")
-        ax[2,0].set_ylabel("$x_{e}$", rotation='horizontal')
-        ax[2,0].set_xlabel("t")
-        ax[2,1].set_ylabel("Altitude h")
-        ax[2,1].set_xlabel("t")
-        
-        # Plot data
-        ax[0,0].plot(self.t, self.ub)
-        ax[0,1].plot(self.t, self.wb)
-        ax[1,0].plot(self.t, self.theta)
-        ax[1,1].plot(self.t, self.q)
-        ax[2,0].plot(self.t, self.xe)
-        ax[2,1].plot(self.t, self.altitude)
-        
-        # Show
-        plt.show()
-        fig,ax = plt.subplots(3, 2)
-'''
 #------------------------------------------------------------------------------
 # Simulation calculation and control class
 
