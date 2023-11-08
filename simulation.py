@@ -60,11 +60,12 @@ class Trim:
         return (-forms.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - forms.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(alpha + self.gamma))
 
 #------------------------------------------------------------------------------
-# Backend class to handle data and store diff. equations (should be a clearer name)
+# Class to display data from other classes
+
 class Visualise():
     
     # Plotting aircraft parameter response
-    def Display(self, Data, initialAltitude = 0):
+    def Display_Sim(self, Data):
         # Split data into components
         self.t = Data.t
         self.q = Data.y[0]
@@ -76,8 +77,8 @@ class Visualise():
         
         # Calculate altitude because ze is reversed for some reason
         self.altitude = self.ze * -1
-        self.altitude += initialAltitude
-        
+        #self.altitude += initialAltitude
+
         fig, ax = plt.subplots(3, 2, figsize=(12, 10))
 
         ax[0, 0].plot(self.t, self.ub)
@@ -114,38 +115,154 @@ class Visualise():
 
         # Output the plot
         return fig
+    
+    def Display_B1(self, V_values, gamma_values, T_values, delta_values):
+       # Create a single figure with all the required subplots
+       plt.figure(figsize=(14, 10))
+
+       # Plot Thrust vs Velocity
+       plt.subplot(2, 2, 1)
+       for j, gamma in enumerate(gamma_values):
+           plt.plot(V_values, T_values[:, j], label=f'gamma = {np.rad2deg(gamma)}°')
+       plt.xlabel('Velocity (V)')
+       plt.ylabel('Thrust (T)')
+       plt.title('Thrust vs. Velocity')
+       plt.legend()
+
+       # Plot Elevator Angle vs Velocity
+       plt.subplot(2, 2, 2)
+       for j, gamma in enumerate(gamma_values):
+           plt.plot(V_values, delta_values[:, j], label=f'gamma = {np.rad2deg(gamma)}°')
+       plt.xlabel('Velocity (V)')
+       plt.ylabel('Elevator Angle (delta) (degrees)')
+       plt.title('Elevator Angle vs. Velocity')
+       plt.legend()
+
+       # Plot Thrust vs gamma
+       plt.subplot(2, 2, 3)
+       for i, V in enumerate(V_values):
+           plt.plot(gamma_values, T_values[i, :], label=f'V = {V} m/s')
+       plt.xlabel('Flight Path Angle (gamma)')
+       plt.ylabel('Thrust (T)')
+       plt.title('Thrust vs Flight Path Angle')
+       plt.legend()
+
+       # Plot Elevator Angle vs Flight Path Angle
+       plt.subplot(2, 2, 4)
+       for i, V in enumerate(V_values):
+           plt.plot(np.rad2deg(gamma_values), delta_values[i, :], label=f'V = {V} m/s')
+       plt.xlabel('Flight Path Angle (gamma) (degrees)')
+       plt.ylabel('Elevator Angle (delta) (degrees)')
+       plt.title('Elevator Angle vs Flight Path Angle')
+       plt.legend()
+
+       # Adjust the layout for better appearance
+       plt.tight_layout()
+
+       # Display the plots
+       plt.show()
 
 #------------------------------------------------------------------------------
-# Simulation calculation and control class
+# B1 - To calculate trim conditions for various values of velocity and path angle
+
+class B1(Visualise):
+    def __init__(self, V_min, V_max, gamma_min, gamma_max, V_step, gamma_step):
+        # Define the ranges for V and gamma
+        self.V_min = V_min
+        self.V_max = V_max
+        self.gamma_min = gamma_min
+        self.gamma_max = gamma_max
+
+        # Define step sizes for V and gamma
+        self.V_step = V_step
+        self.gamma_step = gamma_step
+
+        # Create arrays to store results
+        self.V_values = np.arange(self.V_min, self.V_max, self.V_step)
+        self.gamma_values = np.arange(self.gamma_min, self.gamma_max, self.gamma_step)
+
+        # Create arrays to store T and delta
+        self.T_values = np.empty((len(self.V_values), len(self.gamma_values)))
+        self.delta_values = np.empty((len(self.V_values), len(self.gamma_values)))
+
+        for i, V in enumerate(self.V_values):
+            for j, gamma in enumerate(self.gamma_values):
+                # Create a new Trim instance with the current V and gamma
+                trim_condition = Trim(V, gamma)
+
+                # Store T and delta values from the trim condition
+                self.T_values[i, j] = trim_condition.thrust
+                self.delta_values[i, j] = np.rad2deg(trim_condition.delta)
+        
+        self.Display_B1(self.V_values, self.gamma_values, self.T_values, self.delta_values)
+
+# B2 - To find the time required to climb a specified altitude at a specified angle and velocity
+class B2(Visualise):
+    def __init__(self, trimVelocity, trimGamma, t_end, maxAltitude, pitchTime, climbVelocity, climbGamma, climbTimeGuess = 0, climbStep = 0.5):
+        # Find trim conditions
+        trimParams = Trim(trimVelocity, trimGamma)
+        self.Trim = trimParams
+        
+        trimParams2 = Trim(climbVelocity, climbGamma)
+        self.Trim2 = trimParams2
+        
+        self.climbTime = climbTimeGuess
+        self.pitchTime = pitchTime
+        
+        finalAltitude = initialAltitude
+        
+        while finalAltitude < maxAltitude:
+            y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0,t_end,t_end*50))
+            finalAltitude = -y.y[5][len(y.y[5])-1]
+            
+            self.climbTime += climbStep
+            
+        # Send data to "Display" function to be plotted
+        self.Display_Sim(y)
+        
+        print(f"Climb Duration: {self.climbTime}s")
+    
+    # Function to change delta and thrust during IVP calculations
+    def SimControl(self, t, y):
+        if t > self.pitchTime and t < self.pitchTime + self.climbTime:
+            delta = self.Trim2.delta
+            thrust = self.Trim2.thrust
+        else:
+            delta = self.Trim.delta
+            thrust = self.Trim.thrust
+
+        return forms.Equations(t, y, delta, thrust)
 
 class Simulation(Visualise):
-    def __init__(self, trimVelocity, trimGamma, pitchTime, climbTime, elevatorChange, thrustChange, t_end):
+    def __init__(self, trimVelocity, trimGamma, t_end, time_changes):
+        self.time_changes = time_changes
         
         # Find trim conditions
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
         
-        # IVP library
-        y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, 0], t_eval=np.linspace(0,t_end,t_end*50))
-
-        self.data = y
-        
+        y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0,t_end,t_end*50))
+            
+        # Send data to "Display" function to be plotted
+        self.Display_Sim(y)
+    
     # Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
-        if t > pitchTime and t < pitchTime + climbTime:
-            delta = self.Trim.delta * (1 + elevatorChange/100)
-        else:
-            delta = self.Trim.delta
-
-        if t > pitchTime and t < pitchTime + climbTime:
-            thrust = self.Trim.thrust * (1 + thrustChange/100)
-        else:
-            thrust = self.Trim.thrust
+        delta = self.Trim.delta
+        thrust = self.Trim.thrust
+        
+        for change_time, delta_change, thrust_change in self.time_changes:
+            if t > change_time:
+                delta += delta_change
+                thrust += thrust_change
 
         return forms.Equations(t, y, delta, thrust)
 
-if __name__ == "__main__":
-    # Running the simulation
-    sim = Simulation(velocity_0, gamma_0, pitchTime, climbTime, elevatorChange, thrustChange, simTime)
-    sim.Display(sim.data)
-    
+# Running the simulation
+Simulation(100, 0, 1000, [(100, -0.002, 0), (400, 0.002, 0), (700, -0.002, 0)])
+
+# Running B1
+#B1(50, 200, 0, 1, 10, 0.1)
+
+# Running B2
+#B2(trimVelocity = 109, trimGamma = 0, t_end = 500, maxAltitude = 2000, pitchTime = 10, climbVelocity = 109, climbGamma = np.deg2rad(2), climbTimeGuess = 200, climbStep = 1)
