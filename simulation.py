@@ -95,7 +95,6 @@ class Visualise():
         ax[1, 0].set_ylabel("${\Theta}$ [$^{0}$]", rotation='horizontal')
         ax[1, 0].set_xlabel("t [s]")
 
-
         ax[1, 1].plot(self.t, self.q)
         ax[1, 1].set_title("q Angular Velocity vs Time", fontsize=12)
         ax[1, 1].set_ylabel("q [rad/s]", rotation='horizontal')
@@ -147,4 +146,6 @@ class Simulation(Visualise):
 
 if __name__ == "__main__":
     # Running the simulation
-    Simulation(velocity_0, gamma_0, pitchTime, climbTime, elevatorChange, thrustChange, simTime)
+    sim = Simulation(velocity_0, gamma_0, pitchTime, climbTime, elevatorChange, thrustChange, simTime)
+    sim.Display(sim.data)
+    
