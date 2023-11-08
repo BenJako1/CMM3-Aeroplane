@@ -63,11 +63,11 @@ output_frame = ttk.Frame(root)
 output_frame.grid(row=0, column=1, padx=10, pady=10, sticky="e")
 
 # Create labels and entry fields for user input in the input frame
-ttk.Label(input_frame, text="Velocity:").grid(row=0, column=0)
+ttk.Label(input_frame, text="Velocity (m/s):").grid(row=0, column=0)
 entry1 = ttk.Entry(input_frame)
 entry1.grid(row=0, column=1)
 
-ttk.Label(input_frame, text="Path angle:").grid(row=1, column=0)
+ttk.Label(input_frame, text="Path angle (rad):").grid(row=1, column=0)
 entry2 = ttk.Entry(input_frame)
 entry2.grid(row=1, column=1)
 

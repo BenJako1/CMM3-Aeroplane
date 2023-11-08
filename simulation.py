@@ -64,7 +64,7 @@ class Trim:
 class Visualise():
     
     # Plotting aircraft parameter response
-    def Display(self, Data, initialAltitude=0):
+    def Display(self, Data, initialAltitude = 0):
         # Split data into components
         self.t = Data.t
         self.q = Data.y[0]
@@ -78,7 +78,7 @@ class Visualise():
         self.altitude = self.ze * -1
         self.altitude += initialAltitude
         
-        fig, ax = plt.subplots(3, 2, figsize=(6, 5))
+        fig, ax = plt.subplots(3, 2, figsize=(12, 10))
 
         ax[0, 0].plot(self.t, self.ub)
         ax[0, 0].set_title("$u_{B}$ Body Axis Velocity vs Time", fontsize=12)
