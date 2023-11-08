@@ -35,14 +35,30 @@ def run_Simulation():
         # Get values
         velocity = float(entry1.get().strip())
         gamma = float(entry2.get().strip())
-        pitchTime = float(entry3.get().strip())
-        climbTime = float(entry4.get().strip())
-        elevatorChange = float(entry5.get().strip())
-        thrustChange = float(entry6.get().strip())
+        initialAltitude = float(entry3.get().strip())
+        simulationRunTime = float(entry4.get().strip())
         
-        sim = simulation.Simulation(velocity, gamma, pitchTime, climbTime, elevatorChange, thrustChange, 500)
+        # Assuming you have already retrieved the input values from the boxes as strings
+        input_values_box1 = entry5.get()  # Replace entry_box1 with the actual Tkinter Entry widget
+        input_values_box2 = entry6.get()  # Replace entry_box2 with the actual Tkinter Entry widget
+        input_values_box3 = entry7.get()  # Replace entry_box3 with the actual Tkinter Entry widget
         
-        fig = sim.Display(sim.data)
+        # Split the input values into separate elements
+        values_box1 = input_values_box1.split(',')
+        values_box2 = input_values_box2.split(',')
+        values_box3 = input_values_box3.split(',')
+        
+        # Convert the values to integers (or floats if needed)
+        values_box1 = [float(value.strip()) for value in values_box1]
+        values_box2 = [float(value.strip()) for value in values_box2]
+        values_box3 = [float(value.strip()) for value in values_box3]
+        
+        # Create a list of tuples
+        resultList = [(values_box1[i], values_box2[i], values_box3[i]) for i in range(min(len(values_box1), len(values_box2), len(values_box3)))]
+        
+        sim = simulation.Simulation(velocity, gamma, initialAltitude, simulationRunTime, resultList)
+        
+        fig = sim.Display_Sim(sim.data)
         canvas = FigureCanvasTkAgg(fig, master=output_frame)
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # Use pack geometry manager
         
@@ -83,25 +99,29 @@ delta_label = ttk.Label(input_frame, text="")
 delta_label.grid(row=4, column=0, columnspan=2)
 
 # Add labels and entry fields for simulation parameters in the input frame
-ttk.Label(input_frame, text="Pitch time:").grid(row=5, column=0)
+ttk.Label(input_frame, text="Inital altitude (m):").grid(row=5, column=0)
 entry3 = ttk.Entry(input_frame)
 entry3.grid(row=5, column=1)
 
-ttk.Label(input_frame, text="Climb time:").grid(row=6, column=0)
+ttk.Label(input_frame, text="Simulation run time (s):").grid(row=6, column=0)
 entry4 = ttk.Entry(input_frame)
 entry4.grid(row=6, column=1)
 
-ttk.Label(input_frame, text="Elevator change (%):").grid(row=7, column=0)
+ttk.Label(input_frame, text="Time changes (s):").grid(row=7, column=0)
 entry5 = ttk.Entry(input_frame)
 entry5.grid(row=7, column=1)
 
-ttk.Label(input_frame, text="Thrust change (%):").grid(row=8, column=0)
+ttk.Label(input_frame, text="Elevator changes (rad):").grid(row=8, column=0)
 entry6 = ttk.Entry(input_frame)
 entry6.grid(row=8, column=1)
 
+ttk.Label(input_frame, text="Thrust changes (N):").grid(row=9, column=0)
+entry7 = ttk.Entry(input_frame)
+entry7.grid(row=9, column=1)
+
 # Create a button to run the simulation in the input frame
 run_button = ttk.Button(input_frame, text="Simulate", command=run_Simulation)
-run_button.grid(row=9, column=0, columnspan=2, pady=10)
+run_button.grid(row=10, column=0, columnspan=2, pady=10)
 
 # Start the Tkinter event loop
 root.mainloop()

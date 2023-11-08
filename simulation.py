@@ -16,22 +16,6 @@ import forms
 import constants as c
 
 #------------------------------------------------------------------------------
-# User parameters (to be replaced with UI)
-
-velocity_0 = 100 # Velocity in m/s
-gamma_0 = 0 # Path angle in radians
-
-pitchTime = 100 # Time in seconds after simulationstart at which the values are changed
-climbTime = 300 # Duration of climb in seconds
-
-elevatorChange = 10 # in percent
-thrustChange = 0 # in percent
-
-initialAltitude = 2000 # Altitude at t=0
-
-simTime = 500
-
-#------------------------------------------------------------------------------
 # Class for handling the trim condition
 
 class Trim:
@@ -198,7 +182,7 @@ class B1(Visualise):
 
 # B2 - To find the time required to climb a specified altitude at a specified angle and velocity
 class B2(Visualise):
-    def __init__(self, trimVelocity, trimGamma, t_end, maxAltitude, pitchTime, climbVelocity, climbGamma, climbTimeGuess = 0, climbStep = 0.5):
+    def __init__(self, trimVelocity, trimGamma, t_end, initialAltitude, maxAltitude, pitchTime, climbVelocity, climbGamma, climbTimeGuess = 0, climbStep = 0.5):
         # Find trim conditions
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
@@ -234,17 +218,17 @@ class B2(Visualise):
         return forms.Equations(t, y, delta, thrust)
 
 class Simulation(Visualise):
-    def __init__(self, trimVelocity, trimGamma, t_end, time_changes):
+    def __init__(self, trimVelocity, trimGamma, initialAltitude, t_end, time_changes):
         self.time_changes = time_changes
         
         # Find trim conditions
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
         
-        y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0,t_end,t_end*50))
+        y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0,int(t_end),int(t_end*50)))
             
         # Send data to "Display" function to be plotted
-        self.Display_Sim(y)
+        self.data = y
     
     # Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
@@ -258,11 +242,13 @@ class Simulation(Visualise):
 
         return forms.Equations(t, y, delta, thrust)
 
-# Running the simulation
-Simulation(100, 0, 1000, [(100, -0.002, 0), (400, 0.002, 0), (700, -0.002, 0)])
-
-# Running B1
-#B1(50, 200, 0, 1, 10, 0.1)
-
-# Running B2
-#B2(trimVelocity = 109, trimGamma = 0, t_end = 500, maxAltitude = 2000, pitchTime = 10, climbVelocity = 109, climbGamma = np.deg2rad(2), climbTimeGuess = 200, climbStep = 1)
+if __name__ == "__main__":
+    # Running the simulation
+    #sim = Simulation(100, 0, 1000, 1000, [(100.0, -0.002, 0.0), (300.0, 0.002, 0.0)])
+    #sim.Display_Sim(sim.data)
+    
+    # Running B1
+    B1(50, 200, 0, 1, 10, 0.1)
+    
+    # Running B2
+    #B2(trimVelocity = 109, trimGamma = 0, t_end = 500, initialAltitude = 1000, maxAltitude = 2000, pitchTime = 10, climbVelocity = 109, climbGamma = np.deg2rad(2), climbTimeGuess = 200, climbStep = 4)
