@@ -8,6 +8,12 @@ October-November 2023
 
 '''
 
+'''
+'simulation is the main script of this simulation. It contains the computaionally intense code used to solve the equarions
+of motion using the initial value problem method. classes are heavily integrated in this module to efficiently refrence 
+repeating processes like graphing and calculating trim conditions for a variety of elevator angles and thrusts. This section
+is very object oriented but it is well integrated with the modular design of the code. 
+'''
 # Import libraries & modules
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,7 +22,7 @@ import forms
 import constants as c
 
 #------------------------------------------------------------------------------
-# Class for handling the trim condition
+# Class for handling the intitial and user unputted trim consitons
 
 class Trim:
     def __init__(self, trimVelocity, trimGamma):
@@ -44,7 +50,7 @@ class Trim:
         return (-forms.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - forms.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(alpha + self.gamma))
 
 #------------------------------------------------------------------------------
-# Class to display data from other classes
+# Class to display data from other classes: plotting dynamic behavior and trim conditions
 
 class Visualise():
     
@@ -62,27 +68,29 @@ class Visualise():
         # Calculate altitude because ze is reversed for some reason
         self.altitude = self.ze * -1
         #self.altitude += initialAltitude
+        # Output the plot
+        plt.show()
 
         fig, ax = plt.subplots(3, 2, figsize=(12, 10))
 
         ax[0, 0].plot(self.t, self.ub)
         ax[0, 0].set_title("$u_{B}$ Body Axis Velocity vs Time", fontsize=12)
-        ax[0, 0].set_ylabel("$u_{B}$ [m/s]", rotation='horizontal')
+        ax[0, 0].set_ylabel("$u_{B}$ [m/s]")
         ax[0, 0].set_xlabel("t [s]")
 
         ax[0, 1].plot(self.t, self.wb)
         ax[0, 1].set_title("$w_{B}$ Body Axis Velocity vs Time", fontsize=12)
-        ax[0, 1].set_ylabel("$w_{B}$ [m/s]", rotation='horizontal')
+        ax[0, 1].set_ylabel("$w_{B}$ [m/s]")
         ax[0, 1].set_xlabel("t [s]")
         
         ax[1, 0].plot(self.t, self.theta)
         ax[1, 0].set_title("${\Theta}$ Pitch Angle vs Time", fontsize=12)
-        ax[1, 0].set_ylabel("${\Theta}$ [$^{0}$]", rotation='horizontal')
+        ax[1, 0].set_ylabel("${\Theta}$ [$^{0}$]")
         ax[1, 0].set_xlabel("t [s]")
 
         ax[1, 1].plot(self.t, self.q)
         ax[1, 1].set_title("q Angular Velocity vs Time", fontsize=12)
-        ax[1, 1].set_ylabel("q [rad/s]", rotation='horizontal')
+        ax[1, 1].set_ylabel("q [rad/s]")
         ax[1, 1].set_xlabel("t [s]")
 
         ax[2, 0].plot(self.t, self.xe)
@@ -107,18 +115,18 @@ class Visualise():
        # Plot Thrust vs Velocity
        plt.subplot(2, 2, 1)
        for j, gamma in enumerate(gamma_values):
-           plt.plot(V_values, T_values[:, j], label=f'gamma = {np.rad2deg(gamma)}°')
-       plt.xlabel('Velocity (V)')
-       plt.ylabel('Thrust (T)')
+           plt.plot(V_values, T_values[:, j], label=f'γ = {np.rad2deg(gamma):.1f}°')
+       plt.xlabel('Velocity V [m/s]')
+       plt.ylabel('Thrust [N]')
        plt.title('Thrust vs. Velocity')
        plt.legend()
 
        # Plot Elevator Angle vs Velocity
        plt.subplot(2, 2, 2)
        for j, gamma in enumerate(gamma_values):
-           plt.plot(V_values, delta_values[:, j], label=f'gamma = {np.rad2deg(gamma)}°')
-       plt.xlabel('Velocity (V)')
-       plt.ylabel('Elevator Angle (delta) (degrees)')
+           plt.plot(V_values, delta_values[:, j], label=f'γ = {np.rad2deg(gamma):.1f}°')
+       plt.xlabel('Velocity V [m/s]')
+       plt.ylabel('Elevator Angle δₑ [$^{0}$]')
        plt.title('Elevator Angle vs. Velocity')
        plt.legend()
 
@@ -126,8 +134,8 @@ class Visualise():
        plt.subplot(2, 2, 3)
        for i, V in enumerate(V_values):
            plt.plot(gamma_values, T_values[i, :], label=f'V = {V} m/s')
-       plt.xlabel('Flight Path Angle (gamma)')
-       plt.ylabel('Thrust (T)')
+       plt.xlabel('Flight Path Angle γ [$^{0}$]')
+       plt.ylabel('Thrust [N]')
        plt.title('Thrust vs Flight Path Angle')
        plt.legend()
 
@@ -135,8 +143,8 @@ class Visualise():
        plt.subplot(2, 2, 4)
        for i, V in enumerate(V_values):
            plt.plot(np.rad2deg(gamma_values), delta_values[i, :], label=f'V = {V} m/s')
-       plt.xlabel('Flight Path Angle (gamma) (degrees)')
-       plt.ylabel('Elevator Angle (delta) (degrees)')
+       plt.xlabel('Flight Path Angle γ [$^{0}$]')
+       plt.ylabel('Elevator Angle δₑ [$^{0}$]')
        plt.title('Elevator Angle vs Flight Path Angle')
        plt.legend()
 
@@ -250,6 +258,6 @@ if __name__ == "__main__":
     
     # Running B1
     B1(V_min=50, V_max=200, gamma_min=0, gamma_max=1, V_step=10, gamma_step=0.1)
-    
+      
     # Running B2
     #B2(trimVelocity=109, trimGamma=0, t_end=500, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
