@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-'''
-
-CMM3 Group 7
-Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
-October-November 2023  
-
-'''
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -30,7 +20,17 @@ def run_Trim():
         # Handle the case where a non-numeric value is entered
         messagebox.showerror("Error", "Please enter numeric values.")
 
+# Function to clear the output frame
+def clear_output_frame():
+    """
+    Clears all widgets from the output frame.
+    """
+    for widget in output_frame.winfo_children():
+        widget.destroy()
+
 def run_Simulation():
+    clear_output_frame()  # Clear the frame before running a new simulation
+    
     try:
         # Get values
         velocity = float(entry1.get().strip())
@@ -39,9 +39,9 @@ def run_Simulation():
         simulationRunTime = float(entry4.get().strip())
         
         # Assuming you have already retrieved the input values from the boxes as strings
-        input_values_box1 = entry5.get()  # Replace entry_box1 with the actual Tkinter Entry widget
-        input_values_box2 = entry6.get()  # Replace entry_box2 with the actual Tkinter Entry widget
-        input_values_box3 = entry7.get()  # Replace entry_box3 with the actual Tkinter Entry widget
+        input_values_box1 = entry5.get()  
+        input_values_box2 = entry6.get()  
+        input_values_box3 = entry7.get()  
         
         # Split the input values into separate elements
         values_box1 = input_values_box1.split(',')
@@ -99,7 +99,7 @@ delta_label = ttk.Label(input_frame, text="")
 delta_label.grid(row=4, column=0, columnspan=2)
 
 # Add labels and entry fields for simulation parameters in the input frame
-ttk.Label(input_frame, text="Inital altitude (m):").grid(row=5, column=0)
+ttk.Label(input_frame, text="Initial altitude (m):").grid(row=5, column=0)
 entry3 = ttk.Entry(input_frame)
 entry3.grid(row=5, column=1)
 
