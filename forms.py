@@ -8,14 +8,14 @@ October-November 2023
 '''
 '''
 This module, 'forms', is used to define the equations of motion, trim equations, and equilibrium equations of the aircraft.
-These functuions are called in the 'simulation' module(main script) to perform heavy computational tasks.
+These functions are called in the 'simulation' module(main script) to perform heavy computational tasks.
 'forms' imports parameters from the 'constants' module, including the coefficients of lift, moment, and drag that were 
-calculated using curve fitting methods, as well as environment defining parameters. Refer to the nomencleture in the README file 
-for a comprehensive list of variable and functions definitions.
+calculated using curve fitting methods, as well as environment defining parameters. Refer to the nomenclature in the README file 
+for a comprehensive list of variable and function definitions.
 ''' 
 
-#importing numpy library for triginometric functions
-#importing coefficients and constants from 'constants' module
+#importing numpy library for trigonometric functions
+#importing coefficients and constants from the 'constants' module
 import numpy as np
 import constants as c
 
