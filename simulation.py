@@ -60,7 +60,7 @@ class Visualise():
         # Split data into components
         self.t = Data.t
         self.q = Data.y[0]
-        self.theta = Data.y[1]
+        self.theta = np.rad2deg(Data.y[1])
         self.ub = Data.y[2]
         self.wb = Data.y[3]
         self.xe = Data.y[4]
@@ -258,7 +258,11 @@ if __name__ == "__main__":
     #sim.Display_Sim(sim.data)
     
     # Running B1
-    B1(V_min=50, V_max=200, gamma_min=0, gamma_max=1, V_step=10, gamma_step=0.1)
+    #B1(V_min=50, V_max=200, gamma_min=0, gamma_max=1, V_step=10, gamma_step=0.1)
       
     # Running B2
     #B2(trimVelocity=109, trimGamma=0, t_end=500, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
+
+    trim = Trim(100, np.deg2rad(2))
+    print(np.rad2deg(trim.alpha), trim.thrust)
+    

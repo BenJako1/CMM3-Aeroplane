@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import simulation
 
@@ -8,14 +9,14 @@ def run_Trim():
     try:
         # Get the values from the entry fields
         velocity = float(entry1.get().strip())
-        gamma = float(entry2.get().strip())
+        gamma = np.deg2rad(float(entry2.get().strip()))
         
         # Call your function with the provided values
         trimParams = simulation.Trim(velocity, gamma)
         
         # Display the result in a messagebox
         thrust_label.config(text=f"Thrust: {round(trimParams.thrust, 4)}")
-        delta_label.config(text=f"Elevator angle (delta): {round(trimParams.delta, 4)}")
+        delta_label.config(text=f"Elevator angle (deg)): {round(np.rad2deg(trimParams.delta),4)}")
     except ValueError:
         # Handle the case where a non-numeric value is entered
         messagebox.showerror("Error", "Please enter numeric values.")
@@ -34,7 +35,7 @@ def run_Simulation():
     try:
         # Get values
         velocity = float(entry1.get().strip())
-        gamma = float(entry2.get().strip())
+        gamma = np.deg2rad(float(entry2.get().strip()))
         initialAltitude = float(entry3.get().strip())
         simulationRunTime = float(entry4.get().strip())
         
@@ -54,7 +55,7 @@ def run_Simulation():
         values_box3 = [float(value.strip()) for value in values_box3]
         
         # Create a list of tuples
-        resultList = [(values_box1[i], values_box2[i], values_box3[i]) for i in range(min(len(values_box1), len(values_box2), len(values_box3)))]
+        resultList = [(values_box1[i], np.deg2rad(values_box2[i]), values_box3[i]) for i in range(min(len(values_box1), len(values_box2), len(values_box3)))]
         
         sim = simulation.Simulation(velocity, gamma, initialAltitude, simulationRunTime, resultList)
         
@@ -83,7 +84,7 @@ ttk.Label(input_frame, text="Velocity (m/s):").grid(row=0, column=0)
 entry1 = ttk.Entry(input_frame)
 entry1.grid(row=0, column=1)
 
-ttk.Label(input_frame, text="Path angle (rad):").grid(row=1, column=0)
+ttk.Label(input_frame, text="Path angle (deg):").grid(row=1, column=0)
 entry2 = ttk.Entry(input_frame)
 entry2.grid(row=1, column=1)
 
@@ -111,7 +112,7 @@ ttk.Label(input_frame, text="Time changes (s):").grid(row=7, column=0)
 entry5 = ttk.Entry(input_frame)
 entry5.grid(row=7, column=1)
 
-ttk.Label(input_frame, text="Elevator changes (rad):").grid(row=8, column=0)
+ttk.Label(input_frame, text="Elevator changes (deg):").grid(row=8, column=0)
 entry6 = ttk.Entry(input_frame)
 entry6.grid(row=8, column=1)
 
