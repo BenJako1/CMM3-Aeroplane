@@ -9,10 +9,11 @@ October-November 2023
 '''
 
 '''
-'simulation' is the main script of this simulation. It contains the computationally intense code used to solve the equations
-of motion using the initial value problem method. classes are heavily integrated in this module to efficiently reference 
-repeating processes like graphing and calculating trim conditions for a variety of elevator angles and thrusts. This section
-is very object oriented but it is well integrated with the modular design of the code. 
+'simulation' is the main script of the aircraft simulation. It contains the computationally intense code used to solve the equations
+of motion using the initial value problem method. classes are heavily integrated into this module to reference repeating processes 
+like graphing and calculating trim conditions for a variety of elevator angles and thrusts. Despite its highly 
+object-oriented nature, this section seamlessly aligns with the overall modular design of the code, contributing to its 
+efficiency and cohesion.
 '''
 # Import libraries & modules
 import numpy as np
