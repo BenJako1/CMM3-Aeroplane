@@ -15,24 +15,27 @@ import simulation
 
 # Define the function to execute when the button is pressed
 def run_Trim():
+    clear_Plots() #Call the function that clears the plots. This way when you rerun simulation with new inputs without resetting, the old plots are deleted and the new one can be entered in their place   
     try:
         # Get the values from the entry fields
         velocity = float(entry1.get().strip())
         gamma = float(entry2.get().strip())
-        if velocity>343 or gamma>1.571 or velocity<0 or gamma<-1.571:
+        if velocity>343 or gamma>1.571 or velocity<0 or gamma<-1.571:#If statement created for making the error pop-up when, if inputs outside of wanted range are entered
            messagebox.showerror("Error", "Values out of range \n  0m/s <velocity< 343m/s  \n -1.571 <gamma< 1.571 ") 
         else:
         # Call your function with the provided values
-            trimParams = simulation.Trim(velocity, gamma)
+            trimParams = simulation.Trim(velocity, gamma)#If not out of range, process the trimming inputs
         
         # Display the result in a messagebox
-            thrust_label.config(text=f"Thrust: {round(trimParams.thrust, 4)}")
+            thrust_label.config(text=f"Thrust: {round(trimParams.thrust, 4)}") 
             delta_label.config(text=f"Elevator angle (delta): {round(trimParams.delta, 4)}")
+            alpha_label.config(text=f"Angle of attack (alpha): {round(trimParams.alpha, 4)}")
     except ValueError:
         # Handle the case where a non-numeric value is entered
         messagebox.showerror("Error", "Please enter numeric values.")
 
 def run_Simulation():
+    clear_Plots()#Call the function that clears the plots. This way when you rerun simulation with new inputs without resetting, the old plots are deleted and the new one can be entered in their place 
     try:
         # Get values
         velocity = float(entry1.get().strip())
@@ -120,33 +123,35 @@ thrust_label.grid(row=3, column=0, columnspan=2)
 delta_label = ttk.Label(input_frame, text="")
 delta_label.grid(row=4, column=0, columnspan=2)
 
+alpha_label= ttk.Label(input_frame, text="")
+alpha_label.grid(row=5, column=0,columnspan=2)
 # Add labels and entry fields for simulation parameters in the input frame
-ttk.Label(input_frame, text="Inital altitude (m):").grid(row=5, column=0)
+ttk.Label(input_frame, text="Inital altitude (m):").grid(row=6, column=0)
 entry3 = ttk.Entry(input_frame)
-entry3.grid(row=5, column=1)
+entry3.grid(row=6, column=1)
 
-ttk.Label(input_frame, text="Simulation run time (s):").grid(row=6, column=0)
+ttk.Label(input_frame, text="Simulation run time (s):").grid(row=7, column=0)
 entry4 = ttk.Entry(input_frame)
-entry4.grid(row=6, column=1)
+entry4.grid(row=7, column=1)
 
-ttk.Label(input_frame, text="Time changes (s):").grid(row=7, column=0)
+ttk.Label(input_frame, text="Time changes (s):").grid(row=8, column=0)
 entry5 = ttk.Entry(input_frame)
-entry5.grid(row=7, column=1)
+entry5.grid(row=8, column=1)
 
-ttk.Label(input_frame, text="Elevator changes (rad):").grid(row=8, column=0)
+ttk.Label(input_frame, text="Elevator changes (rad):").grid(row=9, column=0)
 entry6 = ttk.Entry(input_frame)
-entry6.grid(row=8, column=1)
+entry6.grid(row=9, column=1)
 
-ttk.Label(input_frame, text="Thrust changes (N):").grid(row=9, column=0)
+ttk.Label(input_frame, text="Thrust changes (N):").grid(row=10, column=0)
 entry7 = ttk.Entry(input_frame)
-entry7.grid(row=9, column=1)
+entry7.grid(row=10, column=1)
 
 # Create a button to run the simulation in the input frame
 run_button = ttk.Button(input_frame, text="Simulate", command=run_Simulation)
-run_button.grid(row=10, column=0, columnspan=2, pady=10)
+run_button.grid(row=11, column=0, columnspan=2, pady=10)
 
 #Create a button to reset all textboxes in order to input new values
 reset_button = ttk.Button(input_frame,text='Reset',command=clear_Inputs)
-reset_button.grid(row=10, column=1,columnspan=2,pady=10,padx=10)
+reset_button.grid(row=12, column=1,columnspan=2,pady=10,padx=10)
 # Start the Tkinter event loop
 root.mainloop()
