@@ -9,8 +9,8 @@ October-November 2023
 '''
 
 '''
-'simulation is the main script of this simulation. It contains the computaionally intense code used to solve the equarions
-of motion using the initial value problem method. classes are heavily integrated in this module to efficiently refrence 
+'simulation' is the main script of this simulation. It contains the computationally intense code used to solve the equations
+of motion using the initial value problem method. classes are heavily integrated in this module to efficiently reference 
 repeating processes like graphing and calculating trim conditions for a variety of elevator angles and thrusts. This section
 is very object oriented but it is well integrated with the modular design of the code. 
 '''
