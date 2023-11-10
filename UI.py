@@ -11,8 +11,13 @@ def run_Trim():
         velocity = float(entry1.get().strip())
         gamma = np.deg2rad(float(entry2.get().strip()))
         
+        # Minimum velocity =30m/s because thats the slowest a cessna 172 (similar aircraft) can fly
+        # Max velocity is speed of sound (becuase realistic max speed values ~100m/s and project demands more)
+        if velocity > 343 or gamma > np.deg2rad(89) or velocity < 30 or gamma < np.deg2rad(-89):
+           messagebox.showerror("Error", "Values out of range \n  Velocity from 30 to 343 m/s  \n gamma from -89 to 89 degrees ") 
+        else:
         # Call your function with the provided values
-        trimParams = simulation.Trim(velocity, gamma)
+            trimParams = simulation.Trim(velocity, gamma)
         
         # Display the result in a messagebox
         thrust_label.config(text=f"Thrust: {round(trimParams.thrust, 4)}")
