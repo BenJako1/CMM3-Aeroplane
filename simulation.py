@@ -9,21 +9,21 @@ October-November 2023
 '''
 
 '''
-'simulation' is the main script of the aircraft simulation. It contains the computationally intense code used to solve the equations
-of motion using the initial value problem method. classes are heavily integrated into this module to reference repeating processes 
-like graphing and calculating trim conditions for a variety of elevator angles and thrusts. Despite its highly 
-object-oriented nature, this section seamlessly aligns with the overall modular design of the code, contributing to its 
-efficiency and cohesion.
+'simulation' is the main script of the aircraft simulation. It contains the computationally intense code 
+used to solve the equations of motion using the initial value problem method. classes are heavily integrated 
+into this module to reference repeating processes like graphing and calculating trim conditions for a variety of 
+elevator angles and thrusts. Despite its highly object-oriented nature, this section seamlessly aligns with the 
+overall modular design of the code, contributing to its efficiency and cohesion.
 '''
 # Import libraries & modules
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import integrate, optimize
-import forms
+import forms as f
 import constants as c
 
 #------------------------------------------------------------------------------
-# Class for handling the intitial and user unputted trim consitons
+# Class for handling the intitial and user inputted trim conditons
 
 class Trim:
     def __init__(self, trimVelocity, trimGamma):
@@ -43,12 +43,12 @@ class Trim:
         self.wb = trimVelocity * np.sin(self.alpha)
     
         # Calculating thrust
-        self.thrust = forms.Engine_Thrust(self.alpha, self.delta, self.theta, trimVelocity)
+        self.thrust = f.Engine_Thrust(self.alpha, self.delta, self.theta, trimVelocity)
         
     def alpha_trim_func(self, alpha):
         self.delta = -(c.CM0 + c.CMa * alpha) / c.CMde
 
-        return (-forms.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - forms.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(alpha + self.gamma))
+        return (-f.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - f.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(alpha + self.gamma))
 
 #------------------------------------------------------------------------------
 # Class to display data from other classes: plotting dynamic behavior and trim conditions
@@ -224,7 +224,7 @@ class B2(Visualise):
             delta = self.Trim.delta
             thrust = self.Trim.thrust
 
-        return forms.Equations(t, y, delta, thrust)
+        return f.Equations(t, y, delta, thrust)
 
 class Simulation(Visualise):
     def __init__(self, trimVelocity, trimGamma, initialAltitude, t_end, time_changes):
@@ -249,20 +249,29 @@ class Simulation(Visualise):
                 delta += delta_change
                 thrust += thrust_change
 
-        return forms.Equations(t, y, delta, thrust)
+        return f.Equations(t, y, delta, thrust)
 
 # Debugging, uncomment and change commands as needed
 if __name__ == "__main__":
     # Running the simulation
     #sim = Simulation(100, 0, 1000, 1000, [(100.0, -0.002, 0.0), (300.0, 0.002, 0.0)])
     #sim.Display_Sim(sim.data)
-    
+
+#-----------------------------------------------------------------------------------------------------------
+# B1 Parameter Control
+#-----------------------------------------------------------------------------------------------------------
     # Running B1
-    #B1(V_min=50, V_max=200, gamma_min=0, gamma_max=1, V_step=10, gamma_step=0.1)
+    B1(V_min=50, V_max=200, gamma_min=0, gamma_max=1, V_step=10, gamma_step=0.1)
       
-    # Running B2
-    #B2(trimVelocity=109, trimGamma=0, t_end=500, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
+#-----------------------------------------------------------------------------------------------------------
+# B2 Paramater Control
+#-----------------------------------------------------------------------------------------------------------
+    # Running B2 | trimVelocity=(100+u), u=9
+    B2(trimVelocity=105, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=105, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
 
     trim = Trim(100, np.deg2rad(2))
-    print(np.rad2deg(trim.alpha), trim.thrust)
+    print(f"Angle of Attach: {np.rad2deg(trim.alpha): 0.3f} Degrees")
+    print(f"Required Thrust: {trim.thrust: 0.3f} N")
     
+   # f"Climb Duration: {self.climbTime}s
+
