@@ -113,7 +113,7 @@ ttk.Label(input_frame, text="Simulation run time (s):").grid(row=6, column=0)
 entry4 = ttk.Entry(input_frame)
 entry4.grid(row=6, column=1)
 
-ttk.Label(input_frame, text="Time changes (s):").grid(row=7, column=0)
+ttk.Label(input_frame, text="Time Changes (s):").grid(row=7, column=0)
 entry5 = ttk.Entry(input_frame)
 entry5.grid(row=7, column=1)
 
