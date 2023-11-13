@@ -12,8 +12,13 @@ October-November 2023
 'simulation' is the main script of the aircraft simulation. It contains the computationally intense code 
 used to solve the equations of motion using the initial value problem method. classes are heavily integrated 
 into this module to reference repeating processes like graphing and calculating trim conditions for a variety of 
-elevator angles and thrusts. Despite its highly object-oriented nature, this section seamlessly aligns with the 
-overall modular design of the code, contributing to its efficiency and cohesion.
+elevator angles and thrusts. Despite its highly object-oriented nature, this section aligns with the overall
+modular design of the code, contributing to its efficiency and cohesion.
+
+Some limitations are evident one again regarding the quality of intial guesses, which are required for the 
+Newton Raphson root finding technique used to calculate the angle of attack alpha.
+
+Another limitation is the need 
 '''
 # Import libraries & modules
 import numpy as np
@@ -48,7 +53,9 @@ class Trim:
     def alpha_trim_func(self, alpha):
         self.delta = -(c.CM0 + c.CMa * alpha) / c.CMde
 
-        return (-f.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) - f.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) + c.mass * c.gravity * np.cos(alpha + self.gamma))
+        return (-f.Lift(alpha, self.delta, self.velocity) * np.cos(alpha) 
+                - f.Drag(alpha, self.delta, self.velocity) * np.sin(alpha) 
+                + c.mass * c.gravity * np.cos(alpha + self.gamma))
 
 #------------------------------------------------------------------------------
 # Class to display data from other classes: plotting dynamic behavior and trim conditions
@@ -66,7 +73,7 @@ class Visualise():
         self.xe = Data.y[4]
         self.ze = Data.y[5]
         
-        # Calculate altitude because ze is reversed for some reason
+        # Calculate altitude because ze is inverted during calculation
         self.altitude = self.ze * -1
         #self.altitude += initialAltitude
         # Output the plot
@@ -84,15 +91,15 @@ class Visualise():
         ax[0, 1].set_ylabel("$w_{B}$ [m/s]")
         ax[0, 1].set_xlabel("t [s]")
         
-        ax[1, 0].plot(self.t, self.theta)
-        ax[1, 0].set_title("${\Theta}$ Pitch Angle vs Time", fontsize=12)
-        ax[1, 0].set_ylabel("${\Theta}$ [$^{0}$]")
-        ax[1, 0].set_xlabel("t [s]")
-
-        ax[1, 1].plot(self.t, self.q)
-        ax[1, 1].set_title("q Angular Velocity vs Time", fontsize=12)
-        ax[1, 1].set_ylabel("q [rad/s]")
+        ax[1, 1].plot(self.t, self.theta)
+        ax[1, 1].set_title("${\Theta}$ Pitch Angle vs Time", fontsize=12)
+        ax[1, 1].set_ylabel("${\Theta}$ [$^{0}$]")
         ax[1, 1].set_xlabel("t [s]")
+
+        ax[1, 0].plot(self.t, self.q)
+        ax[1, 0].set_title("q Angular Velocity vs Time", fontsize=12)
+        ax[1, 0].set_ylabel("q [rad/s]")
+        ax[1, 0].set_xlabel("t [s]")
 
         ax[2, 0].plot(self.t, self.xe)
         ax[2, 0].set_title("$x_{E}$ Horizontal Position vs Time", fontsize=12)
@@ -188,7 +195,7 @@ class B1(Visualise):
                 self.delta_values[i, j] = np.rad2deg(trim_condition.delta)
         
         self.Display_B1(self.V_values, self.gamma_values, self.T_values, self.delta_values)
-
+#-------------------------------------------------------------------------------------------------------------------------
 # B2 - To find the time required to climb a specified altitude at a specified angle and velocity
 class B2(Visualise):
     def __init__(self, trimVelocity, trimGamma, t_end, initialAltitude, maxAltitude, pitchTime, climbVelocity, climbGamma, climbTimeGuess = 0, climbStep = 0.5):
@@ -225,25 +232,38 @@ class B2(Visualise):
             thrust = self.Trim.thrust
 
         return f.Equations(t, y, delta, thrust)
-
-class Simulation(Visualise):
-    def __init__(self, trimVelocity, trimGamma, initialAltitude, t_end, time_changes):
+#--------------------------------------------------------------------------------------------------------------------------
+# A3 - defining a class to control elevator angle changes and test the accuracy of trimming function
+class A3(Visualise):
+    def __init__(self, trimVelocity, trimGamma, t_end, initialAltitude, time_changes):
         self.time_changes = time_changes
         
         # Find trim conditions
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
         
-        y = integrate.solve_ivp(self.SimControl, [0,t_end], [0,trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0,int(t_end),int(t_end*50)))
+        y = integrate.solve_ivp(self.SimControl, [0, t_end], [0, trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0, int(t_end), int(t_end * 50)))
             
         # Send data to "Display" function to be plotted
-        self.data = y
+        self.Display_Sim(y)
     
     # Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
         delta = self.Trim.delta
         thrust = self.Trim.thrust
-        
+        # Printing initial state paramaters for comparison to brief
+        if t == 0:
+            print(f"Time: {t}")
+            print(f"Alpha: {self.Trim.alpha}")
+            print(f"Delta: {delta}")
+            print(f"Q: {y[0]}")  # Assuming y[0] corresponds to q
+            print(f"Theta: {y[1]}")
+            print(f"uB: {y[2]}")
+            print(f"wB: {y[3]}")
+            print(f"Thrust: {thrust}")
+            print("--------------")
+        # Serring a conditional statement to change the elevator angle and thrust at a cetain time. Inputted in 
+        #A3 parameter control
         for change_time, delta_change, thrust_change in self.time_changes:
             if t > change_time:
                 delta += delta_change
@@ -251,11 +271,26 @@ class Simulation(Visualise):
 
         return f.Equations(t, y, delta, thrust)
 
+
+#----------------------------------------------------------------------------------------------------------
 # Debugging, uncomment and change commands as needed
+# To test parts A3, B1 and B2 seperately, comment out the line in the repective section.
+
 if __name__ == "__main__":
     # Running the simulation
-    #sim = Simulation(100, 0, 1000, 1000, [(100.0, -0.002, 0.0), (300.0, 0.002, 0.0)])
-    #sim.Display_Sim(sim.data)
+    
+
+#-----------------------------------------------------------------------------------------------------------
+# A3 Parameter Control
+#-----------------------------------------------------------------------------------------------------------
+    '''
+    At t=100, the elevator angle decreases by 0.0052 rad, from -0.0520 to -0.0572. The response can be comepared with 
+    the results in the brief to test the acuracy of the simulation. The initial conditions are calculated from the IVP
+    method in the A3 visualize class.
+    '''
+    # Creating an instance of A3 where Display_Sim is called automatically within the __init__ method in A3(visualize). Same method for B1 and B2.
+    # A3(Trim Velocity, Trim gamma, Run time, initial altitude, [(time of change, change in delta, changein thrust),(Time of change, change in delta, changein thrust)])
+    A3(100, 0, 300, 2000, [(100.0, -0.0052, 0.0), (300.0, 0.002, 0.0)])
 
 #-----------------------------------------------------------------------------------------------------------
 # B1 Parameter Control
@@ -267,11 +302,11 @@ if __name__ == "__main__":
 # B2 Paramater Control
 #-----------------------------------------------------------------------------------------------------------
     # Running B2 | trimVelocity=(100+u), u=9
-    B2(trimVelocity=105, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=105, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
-
+    B2(trimVelocity=109, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
+'''
     trim = Trim(100, np.deg2rad(2))
     print(f"Angle of Attach: {np.rad2deg(trim.alpha): 0.3f} Degrees")
     print(f"Required Thrust: {trim.thrust: 0.3f} N")
-    
+    '''
    # f"Climb Duration: {self.climbTime}s
 
