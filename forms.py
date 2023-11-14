@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 '''
 
@@ -20,11 +19,6 @@ for a comprehensive list of variable and function definitions.
 import numpy as np
 import constants as c
 
-
-#----------------------------------------------------------------------------------------------------------------
-# Aerodynamic coefficients CL,CM, and CD
-#---------------------------------------------------------------------------------------------------------------- 
-
 def Coefficient_of_Lift(alpha, delta):
     return c.CL0 + c.CLa * alpha + c.CLde * delta
 
@@ -33,10 +27,6 @@ def Coefficient_of_Moment(alpha, delta):
 
 def Coefficient_of_Drag(alpha, delta):
     return c.CD0 + c.K * (Coefficient_of_Lift(alpha, delta))**2
-
-#----------------------------------------------------------------------------------------------------------------
-# Definitions of forces and moments 
-#---------------------------------------------------------------------------------------------------------------- 
 
 def Lift(alpha, delta, velocity):
     return (0.5 * c.air_density * velocity**2 * c.wing_surface *
@@ -50,29 +40,22 @@ def Moment(alpha, delta, velocity):
     return (0.5 * c.air_density * velocity**2 * c.wing_surface *
            c.cbar * Coefficient_of_Moment(alpha, delta))
 
-#----------------------------------------------------------------------------------------------------------------
-# Defining Engine thrust
-#---------------------------------------------------------------------------------------------------------------- 
-
 def Engine_Thrust(alpha, delta, theta, velocity):
     return (Drag(alpha, delta, velocity) * np.cos(alpha) - Lift(alpha, delta, velocity) * np.sin(alpha) + c.mass * c.gravity * np.sin(theta))
 
-#----------------------------------------------------------------------------------------------------------------
-# Defining differential equations for trimming
-#---------------------------------------------------------------------------------------------------------------- 
-
+# Definition of differential equations
 def Equations ( t, y, delta, thrust):
     q, theta, ub, wb, xe, ze = y
-    #Angle of attack and velocity
+    
     alpha = np.arctan2(wb, ub)
     velocity = np.sqrt(ub**2 + wb**2)
-    #Angular velocity and pitch angle equations
+    
     dq_dt = (Moment(alpha, delta, velocity)/c.inertia_yy)
     dtheta_dt = q
-    # Velocity equations
+    
     dub_dt = (Lift(alpha, delta, velocity) * np.sin(alpha) - Drag(alpha, delta, velocity) * np.cos(alpha) - c.mass * q * wb - c.mass * c.gravity * np.sin(theta) + thrust) / c.mass
     dwb_dt = (-Lift(alpha, delta, velocity) * np.cos(alpha) - Drag(alpha, delta, velocity) * np.sin(alpha) + c.mass * q * ub + c.mass * c.gravity * np.cos(theta)) / c.mass
-    #Navigation equations
+    
     dxe_dt = ub * np.cos(theta) + wb * np.sin(theta)
     dze_dt = - ub * np.sin(theta) + wb * np.cos(theta)
     
