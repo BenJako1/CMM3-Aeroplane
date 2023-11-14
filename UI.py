@@ -85,7 +85,7 @@ def run_Simulation():
         Changed the attribute to A3 istead of Simulation
         '''
         
-        sim = simulation.A3(velocity, gamma, initialAltitude, simulationRunTime, resultList)
+        sim = simulation.A3(velocity, gamma, simulationRunTime, initialAltitude, resultList)
         
         fig = sim.Display_Sim(sim.data)
         canvas = FigureCanvasTkAgg(fig, master=output_frame)
