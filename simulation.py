@@ -167,12 +167,12 @@ class B1(Visualise):
         # Define the ranges for V and gamma
         self.V_min = V_min
         self.V_max = V_max
-        self.gamma_min = gamma_min
-        self.gamma_max = gamma_max
+        self.gamma_min = np.deg2rad(gamma_min)
+        self.gamma_max = np.deg2rad(gamma_max)
 
         # Define step sizes for V and gamma
         self.V_step = V_step
-        self.gamma_step = gamma_step
+        self.gamma_step = np.deg2rad(gamma_step)
 
         # Create arrays to store results
         self.V_values = np.arange(self.V_min, self.V_max, self.V_step)
@@ -191,7 +191,7 @@ class B1(Visualise):
                 self.T_values[i, j] = trim_condition.thrust
                 self.delta_values[i, j] = np.rad2deg(trim_condition.delta)
         
-        self.Display_B1(self.V_values, self.gamma_values, self.T_values, self.delta_values)
+        self.Display_B1(self.V_values, np.rad2deg(self.gamma_values), self.T_values, self.delta_values)
 #-------------------------------------------------------------------------------------------------------------------------
 # B2 - To find the time required to climb a specified altitude at a specified angle and velocity
 class B2(Visualise):
@@ -288,19 +288,19 @@ if __name__ == "__main__":
     '''
     # Creating an instance of A3 where Display_Sim is called automatically within the __init__ method in A3(visualize). Same method for B1 and B2.
     # A3(Trim Velocity, Trim gamma, Run time, initial altitude, [(time of change, change in delta, changein thrust),(Time of change, change in delta, changein thrust)])
-    A3(100, 0, 300, 2000, [(100.0, -0.0052, 0.0), (300.0, 0.002, 0.0)])
+    #A3(100, 0, 300, 2000, [(100.0, -0.0052, 0.0), (300.0, 0.002, 0.0)])
 
 #-----------------------------------------------------------------------------------------------------------
 # B1 Parameter Control
 #-----------------------------------------------------------------------------------------------------------
     # Running B1
-    B1(V_min=50, V_max=200, gamma_min=0, gamma_max=1, V_step=10, gamma_step=0.1)
+    B1(V_min=50, V_max=200, gamma_min=-2, gamma_max=2, V_step=10, gamma_step=0.5)
       
 #-----------------------------------------------------------------------------------------------------------
 # B2 Paramater Control
 #-----------------------------------------------------------------------------------------------------------
     # Running B2 | trimVelocity=(100+u), u=9
-    B2(trimVelocity=109, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
+    #B2(trimVelocity=109, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
 '''
     trim = Trim(100, np.deg2rad(2))
     print(f"Angle of Attach: {np.rad2deg(trim.alpha): 0.3f} Degrees")
