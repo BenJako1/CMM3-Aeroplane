@@ -254,15 +254,12 @@ class Simulation(Visualise):
 # Debugging, uncomment and change commands as needed
 if __name__ == "__main__":
     # Running the simulation
-    #sim = Simulation(100, 0, 1000, 1000, [(100.0, -0.002, 0.0), (300.0, 0.002, 0.0)])
-    #sim.Display_Sim(sim.data)
+    sim = Simulation(100, 0, 1000, 1000, [(100.0, -0.002, 0.0), (300.0, 0.002, 0.0)])
+    sim.Display_Sim(sim.data)
     
     # Running B1
     #B1(V_min=50, V_max=200, gamma_min=0, gamma_max=1, V_step=10, gamma_step=0.1)
       
     # Running B2
     #B2(trimVelocity=109, trimGamma=0, t_end=500, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
-
-    trim = Trim(100, np.deg2rad(2))
-    print(np.rad2deg(trim.alpha), trim.thrust)
     
