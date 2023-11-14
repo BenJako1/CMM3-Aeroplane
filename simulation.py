@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-
 CMM3 Group 7
 Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
 October-November 2023  
@@ -15,10 +14,8 @@ into this module to reference repeating processes like graphing and calculating 
 elevator angles and thrusts. Despite its highly object-oriented nature, this section aligns with the overall
 modular design of the code, contributing to its efficiency and cohesion.
 
-Some limitations are evident one again regarding the quality of intial guesses, which are required for the 
-Newton Raphson root finding technique used to calculate the angle of attack alpha.
-
-Another limitation is the need 
+Some limitations are evident once again regarding the quality of intial guesses, which are required for the 
+Newton Raphson root finding technique used to calculate the angle of attack alpha. 
 '''
 # Import libraries & modules
 import numpy as np
@@ -243,7 +240,8 @@ class A3(Visualise):
         self.Trim = trimParams
         
         y = integrate.solve_ivp(self.SimControl, [0, t_end], [0, trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0, int(t_end), int(t_end * 50)))
-            
+        
+        self.data = y
         # Send data to "Display" function to be plotted
         self.Display_Sim(y)
     
