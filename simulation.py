@@ -6,9 +6,6 @@ CMM3 Group 7
 Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
 October-November 2023  
 
-'''
-
-'''
 'simulation' is the main script of the aircraft simulation. It contains the computationally intense code 
 used to solve the equations of motion using the initial value problem method. classes are heavily integrated 
 into this module to reference repeating processes like graphing and calculating trim conditions for a variety of 
@@ -18,7 +15,6 @@ modular design of the code, contributing to its efficiency and cohesion.
 Some limitations are evident one again regarding the quality of intial guesses, which are required for the 
 Newton Raphson root finding technique used to calculate the angle of attack alpha.
 
-Another limitation is the need 
 '''
 # Import libraries & modules
 import numpy as np
@@ -79,7 +75,7 @@ class Visualise():
         # Output the plot
         plt.show()
 
-        fig, ax = plt.subplots(3, 2, figsize=(12, 10))
+        fig, ax = plt.subplots(3, 2, figsize=(9, 7))
 
         ax[0, 0].plot(self.t, self.ub)
         ax[0, 0].set_title("$u_{B}$ Body Axis Velocity vs Time", fontsize=12)
@@ -263,7 +259,7 @@ class A3(Visualise):
             print(f"Thrust: {thrust}")
             print("--------------")
         # Serring a conditional statement to change the elevator angle and thrust at a cetain time. Inputted in 
-        #A3 parameter control
+        # A3 parameter control
         for change_time, delta_change, thrust_change in self.time_changes:
             if t > change_time:
                 delta += delta_change
@@ -288,6 +284,7 @@ if __name__ == "__main__":
     the results in the brief to test the acuracy of the simulation. The initial conditions are calculated from the IVP
     method in the A3 visualize class.
     '''
+    
     # Creating an instance of A3 where Display_Sim is called automatically within the __init__ method in A3(visualize). Same method for B1 and B2.
     # A3(Trim Velocity, Trim gamma, Run time, initial altitude, [(time of change, change in delta, changein thrust),(Time of change, change in delta, changein thrust)])
     A3(100, 0, 300, 2000, [(100.0, -0.0052, 0.0), (300.0, 0.002, 0.0)])
@@ -303,10 +300,5 @@ if __name__ == "__main__":
 #-----------------------------------------------------------------------------------------------------------
     # Running B2 | trimVelocity=(100+u), u=9
     B2(trimVelocity=109, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
-'''
-    trim = Trim(100, np.deg2rad(2))
-    print(f"Angle of Attach: {np.rad2deg(trim.alpha): 0.3f} Degrees")
-    print(f"Required Thrust: {trim.thrust: 0.3f} N")
-    '''
-   # f"Climb Duration: {self.climbTime}s
+
 

@@ -29,9 +29,7 @@ def run_Trim():
 
 # Function to clear the output frame
 def clear_output_frame():
-    """
-    Clears all widgets from the output frame.
-    """
+    # Clears all widgets from the output frame.
     for widget in output_frame.winfo_children():
         widget.destroy()
 
