@@ -1,3 +1,22 @@
+
+'''
+CMM3 Group 7
+Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
+October-November 2023  
+
+'''
+
+'''
+To run this GUI, ensure the modules 'simulation' 'forms' and 'constants' are open in the same directory, or that they are acccecible
+from the same path.
+
+This GUI is designed to perform two taks. First, it will output the the thrust and elevator angle of the aircraft given an initial state
+in terms of velocity and path angle. The second task will take a user input for an initial altitude, simulation time, time changes, 
+elevator changes, and thrust changes. Based on these inputs, the GUI will plot the reponse of the aircraft over the specified simulation
+time.
+'''
+# Importing tkinter and required libraries for the GUI interface and plotting features
+# Importing numpy for triginometric functions and 'simulation' module for trim functions
 import tkinter as tk
 from tkinter import ttk, messagebox
 import numpy as np
@@ -63,7 +82,11 @@ def run_Simulation():
         # Create a list of tuples
         resultList = [(values_box1[i], np.deg2rad(values_box2[i]), values_box3[i]) for i in range(min(len(values_box1), len(values_box2), len(values_box3)))]
         
-        sim = simulation.Simulation(velocity, gamma, initialAltitude, simulationRunTime, resultList)
+        '''
+        Changed the attribute to A3 istead of Simulation
+        '''
+        
+        sim = simulation.A3(velocity, gamma, simulationRunTime, initialAltitude, resultList)
         
         fig = sim.Display_Sim(sim.data)
         canvas = FigureCanvasTkAgg(fig, master=output_frame)

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 '''
-
 CMM3 Group 7
 Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
 October-November 2023  
@@ -9,11 +8,14 @@ October-November 2023
 '''
 
 '''
-'simulation' is the main script of the aircraft simulation. It contains the computationally intense code used to solve the equations
-of motion using the initial value problem method. classes are heavily integrated into this module to reference repeating processes 
-like graphing and calculating trim conditions for a variety of elevator angles and thrusts. Despite its highly 
-object-oriented nature, this section seamlessly aligns with the overall modular design of the code, contributing to its 
-efficiency and cohesion.
+'simulation' is the main script of the aircraft simulation. It contains the computationally intense code 
+used to solve the equations of motion using the initial value problem method. classes are heavily integrated 
+into this module to reference repeating processes like graphing and calculating trim conditions for a variety of 
+elevator angles and thrusts. Despite its highly object-oriented nature, this section aligns with the overall
+modular design of the code, contributing to its efficiency and cohesion.
+
+Some limitations are evident once again regarding the quality of intial guesses, which are required for the 
+Newton Raphson root finding technique used to calculate the angle of attack alpha. 
 '''
 # Import libraries & modules
 import numpy as np
@@ -72,7 +74,7 @@ class Visualise():
         # Output the plot
         plt.show()
 
-        fig, ax = plt.subplots(3, 2, figsize=(12, 10))
+        fig, ax = plt.subplots(3, 2, figsize=(9, 7))
 
         ax[0, 0].plot(self.t, self.ub)
         ax[0, 0].set_title("$u_{B}$ Body Axis Velocity vs Time", fontsize=12)
@@ -163,12 +165,12 @@ class B1(Visualise):
         # Define the ranges for V and gamma
         self.V_min = V_min
         self.V_max = V_max
-        self.gamma_min = gamma_min
-        self.gamma_max = gamma_max
+        self.gamma_min = np.deg2rad(gamma_min)
+        self.gamma_max = np.deg2rad(gamma_max)
 
         # Define step sizes for V and gamma
         self.V_step = V_step
-        self.gamma_step = gamma_step
+        self.gamma_step = np.deg2rad(gamma_step)
 
         # Create arrays to store results
         self.V_values = np.arange(self.V_min, self.V_max, self.V_step)
@@ -187,8 +189,8 @@ class B1(Visualise):
                 self.T_values[i, j] = trim_condition.thrust
                 self.delta_values[i, j] = np.rad2deg(trim_condition.delta)
         
-        self.Display_B1(self.V_values, self.gamma_values, self.T_values, self.delta_values)
-
+        self.Display_B1(self.V_values, np.rad2deg(self.gamma_values), self.T_values, self.delta_values)
+#-------------------------------------------------------------------------------------------------------------------------
 # B2 - To find the time required to climb a specified altitude at a specified angle and velocity
 class B2(Visualise):
     def __init__(self, trimVelocity, trimGamma, t_end, initialAltitude, maxAltitude, pitchTime, climbVelocity, climbGamma, climbTimeGuess = 0, climbStep = 0.5):
@@ -257,12 +259,29 @@ if __name__ == "__main__":
     #sim = Simulation(100, 0, 1000, 1000, [(100.0, -0.002, 0.0), (300.0, 0.002, 0.0)])
     #sim.Display_Sim(sim.data)
     
-    # Running B1
-    #B1(V_min=50, V_max=200, gamma_min=0, gamma_max=1, V_step=10, gamma_step=0.1)
-      
-    # Running B2
-    #B2(trimVelocity=109, trimGamma=0, t_end=500, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
 
-    trim = Trim(100, np.deg2rad(2))
-    print(np.rad2deg(trim.alpha), trim.thrust)
+#-----------------------------------------------------------------------------------------------------------
+# A3 Parameter Control
+#-----------------------------------------------------------------------------------------------------------
+    '''
+    At t=100, the elevator angle decreases by 0.0052 rad, from -0.0520 to -0.0572. The response can be comepared with 
+    the results in the brief to test the acuracy of the simulation. The initial conditions are calculated from the IVP
+    method in the A3 visualize class.
+    '''
+    # Creating an instance of A3 where Display_Sim is called automatically within the __init__ method in A3(visualize). Same method for B1 and B2.
+    # A3(Trim Velocity, Trim gamma, Run time, initial altitude, [(time of change, change in delta, changein thrust),(Time of change, change in delta, changein thrust)])
+    #A3(100, 0, 300, 2000, [(100.0, -0.0052, 0.0), (300.0, 0.002, 0.0)])
+
+#-----------------------------------------------------------------------------------------------------------
+# B1 Parameter Control
+#-----------------------------------------------------------------------------------------------------------
+    # Running B1
+    B1(V_min=50, V_max=200, gamma_min=-2, gamma_max=2, V_step=10, gamma_step=0.5)
+      
+#-----------------------------------------------------------------------------------------------------------
+# B2 Paramater Control
+#-----------------------------------------------------------------------------------------------------------
+    # Running B2 | trimVelocity=(100+u), u=9
+    #B2(trimVelocity=109, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
+
     
