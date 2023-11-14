@@ -76,7 +76,7 @@ class Visualise():
         # Output the plot
         plt.show()
 
-        fig, ax = plt.subplots(3, 2, figsize=(12, 10))
+        fig, ax = plt.subplots(3, 2, figsize=(9, 7))
 
         ax[0, 0].plot(self.t, self.ub)
         ax[0, 0].set_title("$u_{B}$ Body Axis Velocity vs Time", fontsize=12)
