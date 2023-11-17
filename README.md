@@ -4,38 +4,25 @@ This simulation models the longitudinal dynamics of a small aircraft by outputti
 time-dependent variables. These variables include body axis velocities, angular velocity, pitch angle, 
 horizontal displacement, and altitude. For more details about these responses, refer to the group report.
 
-## Testing Procedure
-To test the code, open the 'UI.py' file and ensure that the following files are open in the same directory or 
-that they are accessible by the console:
-- `forms.py`
-- `constants`
-- `simulation`
-
-The UI can also be activated through the terminal after downloading the files in the same directory and 
-running the following line |INSERT THE RUN COMMAND HERE|.
+## Running
+Once the code in downloaded, navigate to the code directory using the command line (terminal on MacOS). The code can be run using the following command `python UI.py` in the command line. The code can also be run from a IDE like Spyder or VSCode by running UI.py.
 
 ## Testing the Simulation
-The code can be tested through the GUI and by changing specified parameters in 'simulation.py.'
+Other aspects of the code can be tested in ‘simulation.py’. This is done simply with uncommenting the function calls at the bottom and experimenting with input values. In this manner, trim conditions can be found for ranges of velocity and path angle (B1) as well as a calculation for the time required to climb a specified altitude (B2).
 
 ### GUI Setup
 The GUI can perform two tasks:
-1. Output the required thrust and elevator angle given an initial state velocity and path angle (trimming).
+1. Output the required thrust and elevator angle given an initial state velocity and path angle (trimming). These values are range-capped to prevent unstable simulations.
 2. Display the response of the aircraft’s time-dependent variables - body axis velocities (x and z axis), 
 angular velocity, pitch angle, horizontal position, and altitude. These responses display after the user 
 specifies the following parameters:
    - **Initial altitude:** Starting fight altitude
-     - Recommended range h > 50m
    - **Simulation run time:** Duration of simulation
-     - Recommended range: t = 10 * initializing time
-   - **Parameter initializing time:** Time at which later elevator and thrust changes are activated
-     - t > 10s
-   - **Elevator angle:** Change in elevator angle at initializing time
-     - A -60 < δ< 60 
-   - **Thrust increase/decrease:** Change in thrust at initializing time
-     - -600 < T < 600
+   - **Input time:** Time at which later elevator and thrust changes are activated, comma-seperated values accepted e.g. 100, 500, 600
+   - **Change in elevator angle:** Change in elevator angle at input time comma-seperated values accepted e.g. -0.1, 0, 0.1
+   - **Change in thrust:** Change in thrust at input time, comma-seperated values accepted e.g. 500, 0, -500
 
-The code can also be tested in ‘simulation.py’ by modifying the parameters for running parts A3 B1 and B2. 
-Details on how to modify the parameters can be found in the in-code annotations.
+Note: There is no range cap on the simulation inputs. The user can test the limits of the simulation without restrictions but will encounter unusual results at large input values.
 
 ## Module and Class Description
 ### Module
