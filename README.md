@@ -1,5 +1,4 @@
-#CMM Flight Simulator for the Longitudinal Dynamics of a Small aircraft
-#Group 07
+# CMM Flight Simulator for the Longitudinal Dynamics of a Small aircraft: Group 07
 ## Overview
 This simulation models the longitudinal dynamics of a small aircraft by outputting response curves of 
 time-dependent variables. These variables include body axis velocities, angular velocity, pitch angle, 
