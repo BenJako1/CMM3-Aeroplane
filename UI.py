@@ -2,11 +2,8 @@
 '''
 CMM3 Group 7
 Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
-October-November 2023  
+October-November 2023
 
-'''
-
-'''
 To run this GUI, ensure the modules 'simulation' 'forms' and 'constants' are open in the same directory, or that they are acccecible
 from the same path.
 
@@ -39,18 +36,15 @@ def run_Trim():
             trimParams = simulation.Trim(velocity, gamma)
         
         # Display the result in a messagebox
-        alpha_label.config(text=f"Angle of attack (deg): {round(np.rad2deg(trimParams.alpha), 4)}")
-        thrust_label.config(text=f"Thrust (N): {round(trimParams.thrust, 4)}")
-        delta_label.config(text=f"Elevator angle (deg): {round(np.rad2deg(trimParams.delta),4)}")
+        thrust_label.config(text=f"Thrust: {round(trimParams.thrust, 4)}")
+        delta_label.config(text=f"Elevator angle (deg)): {round(np.rad2deg(trimParams.delta),4)}")
     except ValueError:
         # Handle the case where a non-numeric value is entered
         messagebox.showerror("Error", "Please enter numeric values.")
 
 # Function to clear the output frame
 def clear_output_frame():
-    """
-    Clears all widgets from the output frame.
-    """
+    # Clears all widgets from the output frame.
     for widget in output_frame.winfo_children():
         widget.destroy()
 
@@ -81,10 +75,6 @@ def run_Simulation():
         
         # Create a list of tuples
         resultList = [(values_box1[i], np.deg2rad(values_box2[i]), values_box3[i]) for i in range(min(len(values_box1), len(values_box2), len(values_box3)))]
-        
-        '''
-        Changed the attribute to A3 istead of Simulation
-        '''
         
         sim = simulation.A3(velocity, gamma, simulationRunTime, initialAltitude, resultList)
         
@@ -122,39 +112,41 @@ run_button = ttk.Button(input_frame, text="Get Trim Parameters", command=run_Tri
 run_button.grid(row=2, column=0, columnspan=2, pady=10)
 
 # Create labels to display the output in the input frame
-alpha_label= ttk.Label(input_frame, text="")
-alpha_label.grid(row=3, column=0,columnspan=2)
-
 thrust_label = ttk.Label(input_frame, text="")
-thrust_label.grid(row=4, column=0, columnspan=2)
+thrust_label.grid(row=3, column=0, columnspan=2)
 
 delta_label = ttk.Label(input_frame, text="")
-delta_label.grid(row=5, column=0, columnspan=2)
+delta_label.grid(row=4, column=0, columnspan=2)
 
 # Add labels and entry fields for simulation parameters in the input frame
-ttk.Label(input_frame, text="Inital altitude (m):").grid(row=6, column=0)
+ttk.Label(input_frame, text="Initial altitude (m):").grid(row=5, column=0)
 entry3 = ttk.Entry(input_frame)
-entry3.grid(row=6, column=1)
+entry3.grid(row=5, column=1)
 
-ttk.Label(input_frame, text="Simulation run time (s):").grid(row=7, column=0)
+ttk.Label(input_frame, text="Simulation run time (s):").grid(row=6, column=0)
 entry4 = ttk.Entry(input_frame)
-entry4.grid(row=7, column=1)
+entry4.grid(row=6, column=1)
 
-ttk.Label(input_frame, text="Time changes (s):").grid(row=8, column=0)
+ttk.Label(input_frame, text="Input time (s):").grid(row=7, column=0)
 entry5 = ttk.Entry(input_frame)
-entry5.grid(row=8, column=1)
+entry5.grid(row=7, column=1)
 
-ttk.Label(input_frame, text="Elevator changes (deg):").grid(row=9, column=0)
+ttk.Label(input_frame, text="Change in elevator angle (deg):").grid(row=8, column=0)
 entry6 = ttk.Entry(input_frame)
-entry6.grid(row=9, column=1)
+entry6.grid(row=8, column=1)
 
-ttk.Label(input_frame, text="Thrust changes (N):").grid(row=10, column=0)
+ttk.Label(input_frame, text="Change in Thrust (N):").grid(row=9, column=0)
 entry7 = ttk.Entry(input_frame)
-entry7.grid(row=10, column=1)
+entry7.grid(row=9, column=1)
 
 # Create a button to run the simulation in the input frame
 run_button = ttk.Button(input_frame, text="Simulate", command=run_Simulation)
-run_button.grid(row=11, column=0, columnspan=2, pady=10)
+run_button.grid(row=10, column=0, columnspan=2, pady=10)
+
+# Create a label for instructions
+instructions_text = "Input initial velocity and path angle for trim conditions.\nSimulation parameters entered in the lower 5 boxes. ""Input time"" (times after start at which changes are executed) are entered as comma seperated integers.\nChanges in elevator and thrust are also comma seperated and are absolute step changes e.g. (-0.1,0,0.1) is change by -0.1 deg, dont change, change by 0.1 deg.\nIf change lists are unequal in length, the length of the shortest length is used.\n\nClick 'simulate' to display or reset graphs."
+instructions_label = ttk.Label(input_frame, text=instructions_text, wraplength=300)
+instructions_label.grid(row=12, column=0, columnspan=2, pady=10)
 
 # Start the Tkinter event loop
 root.mainloop()
