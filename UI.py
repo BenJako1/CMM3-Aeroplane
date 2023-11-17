@@ -60,8 +60,8 @@ def run_Simulation():
         # Get values
         velocity = float(entry1.get().strip())
         gamma = np.deg2rad(float(entry2.get().strip()))
-        initialAltitude = float(entry3.get().strip())
-        simulationRunTime = float(entry4.get().strip())
+        simulationRunTime = float(entry3.get().strip())
+        initialAltitude = float(entry4.get().strip())
         
         # Assuming you have already retrieved the input values from the boxes as strings
         input_values_box1 = entry5.get()  
