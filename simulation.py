@@ -147,7 +147,7 @@ class Visualise():
        # Plot Elevator Angle vs Flight Path Angle
        plt.subplot(2, 2, 4)
        for i, V in enumerate(V_values):
-           plt.plot(np.rad2deg(gamma_values), delta_values[i, :], label=f'V = {V} m/s')
+           plt.plot(gamma_values, delta_values[i, :], label=f'V = {V} m/s')
        plt.xlabel('Flight Path Angle γ [$^{0}$]')
        plt.ylabel('Elevator Angle δₑ [$^{0}$]')
        plt.title('Elevator Angle vs Flight Path Angle')
@@ -167,12 +167,12 @@ class B1(Visualise):
         # Define the ranges for V and gamma
         self.V_min = V_min
         self.V_max = V_max
-        self.gamma_min = np.deg2rad(gamma_min)
-        self.gamma_max = np.deg2rad(gamma_max)
+        self.gamma_min = gamma_min
+        self.gamma_max = gamma_max
 
         # Define step sizes for V and gamma
         self.V_step = V_step
-        self.gamma_step = np.deg2rad(gamma_step)
+        self.gamma_step = gamma_step
 
         # Create arrays to store results
         self.V_values = np.arange(self.V_min, self.V_max, self.V_step)
@@ -185,13 +185,13 @@ class B1(Visualise):
         for i, V in enumerate(self.V_values):
             for j, gamma in enumerate(self.gamma_values):
                 # Create a new Trim instance with the current V and gamma
-                trim_condition = Trim(V, gamma)
+                trim_condition = Trim(V, np.deg2rad(gamma))
 
                 # Store T and delta values from the trim condition
                 self.T_values[i, j] = trim_condition.thrust
                 self.delta_values[i, j] = np.rad2deg(trim_condition.delta)
         
-        self.Display_B1(self.V_values, np.rad2deg(self.gamma_values), self.T_values, self.delta_values)
+        self.Display_B1(self.V_values, self.gamma_values, self.T_values, self.delta_values)
 #-------------------------------------------------------------------------------------------------------------------------
 # B2 - To find the time required to climb a specified altitude at a specified angle and velocity
 class B2(Visualise):
@@ -249,18 +249,6 @@ class A3(Visualise):
     def SimControl(self, t, y):
         delta = self.Trim.delta
         thrust = self.Trim.thrust
-        # Printing initial state paramaters for comparison to brief
-        if t == 0:
-            print(f"Time: {t}")
-            print(f"Alpha: {self.Trim.alpha}")
-            print(f"Delta: {delta}")
-            print(f"Q: {y[0]}")  # Assuming y[0] corresponds to q
-            print(f"Theta: {y[1]}")
-            print(f"uB: {y[2]}")
-            print(f"wB: {y[3]}")
-            print(f"Thrust: {thrust}")
-            print("--------------")
-        # Serring a conditional statement to change the elevator angle and thrust at a cetain time. Inputted in 
         #A3 parameter control
         for change_time, delta_change, thrust_change in self.time_changes:
             if t > change_time:
@@ -301,10 +289,4 @@ if __name__ == "__main__":
 #-----------------------------------------------------------------------------------------------------------
     # Running B2 | trimVelocity=(100+u), u=9
     #B2(trimVelocity=109, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
-'''
-    trim = Trim(100, np.deg2rad(2))
-    print(f"Angle of Attach: {np.rad2deg(trim.alpha): 0.3f} Degrees")
-    print(f"Required Thrust: {trim.thrust: 0.3f} N")
-    '''
-   # f"Climb Duration: {self.climbTime}s
 
