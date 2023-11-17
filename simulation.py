@@ -1,4 +1,5 @@
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 '''
 CMM3 Group 7
 Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
@@ -305,6 +306,5 @@ if __name__ == "__main__":
     print(f"Angle of Attach: {np.rad2deg(trim.alpha): 0.3f} Degrees")
     print(f"Required Thrust: {trim.thrust: 0.3f} N")
     '''
-
    # f"Climb Duration: {self.climbTime}s
 
