@@ -5,8 +5,6 @@ CMM3 Group 7
 Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
 October-November 2023  
 
-'''
-'''
 This module, 'forms', is used to define the equations of motion, trim equations, and equilibrium equations of the aircraft.
 These functions are called in the 'simulation' module(main script) to perform heavy computational tasks.
 'forms' imports parameters from the 'constants' module, including the coefficients of lift, moment, and drag that were 
