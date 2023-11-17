@@ -73,8 +73,6 @@ class Visualise():
         # Calculate altitude because ze is inverted during calculation
         self.altitude = self.ze * -1
         #self.altitude += initialAltitude
-        # Output the plot
-        plt.show()
 
         fig, ax = plt.subplots(3, 2, figsize=(9, 7))
 
