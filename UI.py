@@ -75,12 +75,17 @@ def run_Simulation():
         
         # Create a list of tuples
         resultList = [(values_box1[i], np.deg2rad(values_box2[i]), values_box3[i]) for i in range(min(len(values_box1), len(values_box2), len(values_box3)))]
-        
-        sim = simulation.A3(velocity, gamma, simulationRunTime, initialAltitude, resultList)
-        
-        fig = sim.Display_Sim(sim.data)
-        canvas = FigureCanvasTkAgg(fig, master=output_frame)
-        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # Use pack geometry manager
+        if velocity <= 0:
+            messagebox.showerror("Error", "Values out of range \n  Velocity must be greater than 0 m/s")
+        else:
+            if velocity > 200 or gamma > np.deg2rad(89) or velocity < 65 or gamma < np.deg2rad(-89):
+               messagebox.showerror("Error", "Flow separation is not simulated, these values may lead to unstable simulation")  
+               
+            sim = simulation.A3(velocity, gamma, simulationRunTime, initialAltitude, resultList)
+            
+            fig = sim.Display_Sim(sim.data)
+            canvas = FigureCanvasTkAgg(fig, master=output_frame)
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)  # Use pack geometry manager
         
     except ValueError:
         # Handle the case where a non-numeric value is entered
