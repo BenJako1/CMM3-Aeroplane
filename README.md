@@ -24,6 +24,8 @@ specifies the following parameters:
 
 Note: There is no range cap on the simulation inputs. The user can test the limits of the simulation without restrictions but will encounter unusual results at large input values.
 
+When running "simulation", the program will give a warning for values that may result in unstable graphs (i.e. low velocities where the plane cannot generate enough lift) but will still display graphs. For non-sensical values e.g. negative velocities, the graphs will not display.
+
 ## Module and Class Description
 ### Module
 | Name        | Contents                  | Details                                    |
