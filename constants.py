@@ -1,17 +1,3 @@
-# -*- coding: utf-8 -*-
-'''
-
-CMM3 Group 7
-Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
-October-November 2023  
-
-This module, 'constants', contains evironment defining parameters, physical aircraft properties, as well as data lists 
-copied from aero_tables file provided with the brief. It utilizes the 'optimize' module from the SciPy library to define
-the data sets with linear and quadratic models and hence calculate the relvent coefficients needed for solving the 
-equations of motions.
-'''
-
-# Importing libraries
 import numpy as np
 from scipy import optimize
 
@@ -112,7 +98,6 @@ def CD_func(x, a, b):
     return a + b * x**2.0
 [CD0, K], _ = optimize.curve_fit(CD_func, CL_list, CD_list, [CD0, K])
 
-# This statement prints coefficients only when this script is run standalone
 # Used for debugging
 if __name__ == "__main__":
     print(f"CL0 = {CL0}")

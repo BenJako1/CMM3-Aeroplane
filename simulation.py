@@ -1,23 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-'''
-CMM3 Group 7
-Benjamin, Rodrigo, Maurice, Nick, Jack, Stamatis
-October-November 2023  
-
-'''
-
-'''
-'simulation' is the main script of the aircraft simulation. It contains the computationally intense code 
-used to solve the equations of motion using the initial value problem method. classes are heavily integrated 
-into this module to reference repeating processes like graphing and calculating trim conditions for a variety of 
-elevator angles and thrusts. Despite its highly object-oriented nature, this section aligns with the overall
-modular design of the code, contributing to its efficiency and cohesion.
-
-Some limitations are evident once again regarding the quality of intial guesses, which are required for the 
-Newton Raphson root finding technique used to calculate the angle of attack alpha. 
-'''
-# Import libraries & modules
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import integrate, optimize
@@ -72,7 +52,6 @@ class Visualise():
         
         # Calculate altitude because ze is inverted during calculation
         self.altitude = self.ze * -1
-        #self.altitude += initialAltitude
 
         fig, ax = plt.subplots(3, 2, figsize=(9, 7))
 
@@ -108,11 +87,9 @@ class Visualise():
 
         plt.tight_layout()
 
-        # Output the plot
         return fig
     
-    def Display_B1(self, V_values, gamma_values, T_values, delta_values):
-       # Create a single figure with all the required subplots
+    def Display_Trim_Conditions(self, V_values, gamma_values, T_values, delta_values):
        plt.figure(figsize=(14, 10))
 
        # Plot Thrust vs Velocity
@@ -151,50 +128,42 @@ class Visualise():
        plt.title('Elevator Angle vs Flight Path Angle')
        plt.legend()
 
-       # Adjust the layout for better appearance
        plt.tight_layout()
 
-       # Display the plots
        plt.show()
 
 #------------------------------------------------------------------------------
-# B1 - To calculate trim conditions for various values of velocity and path angle
+# Calculates trim conditions for a range of input values
 
-class B1(Visualise):
+class Trim_Conditions(Visualise):
     def __init__(self, V_min, V_max, gamma_min, gamma_max, V_step, gamma_step):
-        # Define the ranges for V and gamma
         self.V_min = V_min
         self.V_max = V_max
         self.gamma_min = gamma_min
         self.gamma_max = gamma_max
 
-        # Define step sizes for V and gamma
         self.V_step = V_step
         self.gamma_step = gamma_step
 
-        # Create arrays to store results
         self.V_values = np.arange(self.V_min, self.V_max, self.V_step)
         self.gamma_values = np.arange(self.gamma_min, self.gamma_max, self.gamma_step)
 
-        # Create arrays to store T and delta
         self.T_values = np.empty((len(self.V_values), len(self.gamma_values)))
         self.delta_values = np.empty((len(self.V_values), len(self.gamma_values)))
 
         for i, V in enumerate(self.V_values):
             for j, gamma in enumerate(self.gamma_values):
-                # Create a new Trim instance with the current V and gamma
                 trim_condition = Trim(V, np.deg2rad(gamma))
 
-                # Store T and delta values from the trim condition
                 self.T_values[i, j] = trim_condition.thrust
                 self.delta_values[i, j] = np.rad2deg(trim_condition.delta)
         
         self.Display_B1(self.V_values, self.gamma_values, self.T_values, self.delta_values)
 #-------------------------------------------------------------------------------------------------------------------------
-# B2 - To find the time required to climb a specified altitude at a specified angle and velocity
-class B2(Visualise):
+# Determines the time required to climb a specified height at a specified angle and velocity
+
+class Climb_Time(Visualise):
     def __init__(self, trimVelocity, trimGamma, t_end, initialAltitude, maxAltitude, pitchTime, climbVelocity, climbGamma, climbTimeGuess = 0, climbStep = 0.5):
-        # Find trim conditions
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
         
@@ -227,21 +196,20 @@ class B2(Visualise):
             thrust = self.Trim.thrust
 
         return f.Equations(t, y, delta, thrust)
+
 #--------------------------------------------------------------------------------------------------------------------------
-# A3 - defining a class to control elevator angle changes and test the accuracy of trimming function
-class A3(Visualise):
+# Simulation of flight - called by UI
+
+class Simulation(Visualise):
     def __init__(self, trimVelocity, trimGamma, t_end, initialAltitude, time_changes):
         self.time_changes = time_changes
         
-        # Find trim conditions
         trimParams = Trim(trimVelocity, trimGamma)
         self.Trim = trimParams
         
-        y = integrate.solve_ivp(self.SimControl, [0, t_end], [0, trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0, int(t_end), int(t_end * 50)))
+        self.data = integrate.solve_ivp(self.SimControl, [0, t_end], [0, trimParams.theta, trimParams.ub, trimParams.wb, 0, -initialAltitude], t_eval=np.linspace(0, int(t_end), int(t_end * 50)))
         
-        self.data = y
-        # Send data to "Display" function to be plotted
-        self.Display_Sim(y)
+        self.Display_Sim(self.data)
     
     # Function to change delta and thrust during IVP calculations
     def SimControl(self, t, y):
@@ -258,33 +226,13 @@ class A3(Visualise):
 
 #----------------------------------------------------------------------------------------------------------
 # Debugging, uncomment and change commands as needed
-# To test parts A3, B1 and B2 seperately, comment out the line in the repective section.
 
 if __name__ == "__main__":
-    # Running the simulation
     
+    sim = Simulation(100, 0, 300, 2000, [(100.0, -0.0052, 0.0), (300.0, 0.002, 0.0)])
+    sim.Display_Sim(sim.data)
 
-#-----------------------------------------------------------------------------------------------------------
-# A3 Parameter Control
-#-----------------------------------------------------------------------------------------------------------
-    '''
-    At t=100, the elevator angle decreases by 0.0052 rad, from -0.0520 to -0.0572. The response can be comepared with 
-    the results in the brief to test the acuracy of the simulation. The initial conditions are calculated from the IVP
-    method in the A3 visualize class.
-    '''
-    # Creating an instance of A3 where Display_Sim is called automatically within the __init__ method in A3(visualize). Same method for B1 and B2.
-    # A3(Trim Velocity, Trim gamma, Run time, initial altitude, [(time of change, change in delta, changein thrust),(Time of change, change in delta, changein thrust)])
-    #A3(100, 0, 300, 2000, [(100.0, -0.0052, 0.0), (300.0, 0.002, 0.0)])
-
-#-----------------------------------------------------------------------------------------------------------
-# B1 Parameter Control
-#-----------------------------------------------------------------------------------------------------------
-    # Running B1
-    B1(V_min=50, V_max=200, gamma_min=-2, gamma_max=2.5, V_step=10, gamma_step=0.5)
+    #B1(V_min=50, V_max=200, gamma_min=-2, gamma_max=2.5, V_step=10, gamma_step=0.5)
       
-#-----------------------------------------------------------------------------------------------------------
-# B2 Paramater Control
-#-----------------------------------------------------------------------------------------------------------
-    # Running B2 | trimVelocity=(100+u), u=9
-    #B2(trimVelocity=109, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
+    #Climb_Time(trimVelocity=109, trimGamma=0, t_end=700, initialAltitude=1000, maxAltitude=2000, pitchTime=10, climbVelocity=109, climbGamma=np.deg2rad(2), climbTimeGuess=200, climbStep=1)
 
