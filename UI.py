@@ -14,8 +14,8 @@ def run_Trim():
         else:
             trimParams = simulation.Trim(velocity, gamma)
         
-        thrust_label.config(text=f"Thrust: {round(trimParams.thrust, 4)}")
-        delta_label.config(text=f"Elevator angle (deg)): {round(np.rad2deg(trimParams.delta),4)}")
+        thrust_label.config(text=f"Thrust (N): {round(trimParams.thrust, 4)}")
+        delta_label.config(text=f"Elevator angle (deg): {round(np.rad2deg(trimParams.delta),4)}")
     except ValueError:
         messagebox.showerror("Error", "Please enter numeric values.")
 
